@@ -19,19 +19,30 @@ def show_mask(img, mask, color):
     bg.putalpha(255)
     # bg.save('bg.png')
     img.paste(bg, mask=mask)
+    
+    
+def get_shrink_bounds(img, width):
+    # return tuple for size of (width, height/shrink factor)
+    return (width, int(img.size[1] // (img.size[0] / width)))
 
 
-input_img = Image.open("temp/input.jpg")
+input_img = Image.open("temp/input.png")
+# print(get_shrink_bounds(input_img, 800))
+resized = input_img.resize(
+    get_shrink_bounds(input_img, 1000),
+    Image.Resampling.BILINEAR
+    )
 segmenter = pipeline(
-    task="image-segmentation", model="shi-labs/oneformer_ade20k_swin_large"
+    task="image-segmentation", model="facebook/mask2former-swin-large-ade-semantic"
 )
-segments = segmenter(input_img, 
-                     threshold=0,
-                    #  mask_threshold=0.3,
-                    #  overlap_mask_area_threshold=0.3
+segments = segmenter(resized,
+                     subtask="semantic",
+                    #  threshold=0.2,
+                    #  mask_threshold=0.8,
+                     overlap_mask_area_threshold=0.9
                      )
 
-all_masks = Image.new("RGBA", input_img.size, (0, 0, 0, 0))
+all_masks = Image.new("RGBA", resized.size, (0, 0, 0, 0))
 for segment in segments:
     if segment["label"] in COLOR_MAP:
         color = COLOR_MAP[segment["label"]]
@@ -41,5 +52,5 @@ for segment in segments:
     show_mask(all_masks, segment["mask"], color)
 all_masks.save("temp/masks_output.png")
 # overlay = all_masks.point(lambda p: (p[0], p[1], p[2]) if p[3] != 0 else p)
-output = Image.blend(input_img.convert("RGBA"), all_masks, 0.4)
+output = Image.blend(input_img.convert("RGBA"), all_masks.resize(input_img.size, Image.Resampling.BILINEAR), 0.4)
 output.save("temp/output.png")
