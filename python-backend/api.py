@@ -1,10 +1,10 @@
 from fastapi import FastAPI, HTTPException, UploadFile
-
 from dataclasses import dataclass
 
-from concurrent.futures import ProcessPoolExecutor
 from contextlib import asynccontextmanager
-import asyncio
+import multiprocessing as mp
+
+import sqlite3
 
 import time
 import random
@@ -15,7 +15,7 @@ class ProcessImageItem:
   id: str
   image: bytes
 
-id_db = {}
+id_db={}
 
 def get_free_id() -> str:
   while True:
@@ -26,42 +26,46 @@ def get_free_id() -> str:
 # Computationally Intensive Task
 def cpu_bound_task(item: ProcessImageItem):
     print(f"Processing: {item.id}")
-    time.sleep(15)
+    for i in range(15):
+      print(i, end=" ", flush=True)
+      time.sleep(1)
     return 'ok'
 
-async def model_loop(q: asyncio.Queue, pool: ProcessPoolExecutor):
-    model = waller.WallerProcess()
+def model_loop(request_q: mp.Queue):
+    # model = waller.WallerProcess()
     while True:
         # wait until request in queue
-        queue_item: ProcessImageItem = await q.get()
-        id_db[queue_item.id] = "processing"
+        queue_item: ProcessImageItem = request_q.get(block=True)
         
-        loop = asyncio.get_running_loop()
-        # do the thing on another core
+        # loop = asyncio.get_running_loop()
+        # do the thing
         # NOTE this "await" blocks the loop, so another image in queue will not be processed until this finishes
-        res = await loop.run_in_executor(pool, cpu_bound_task, queue_item)
+        # res = await loop.run_in_executor(pool, model.process_image, queue_item.image)
+        # p = mp.Process(target=run_and_queue, args=[model.process_image, queue_item.image, response_q], daemon=True)
+        cpu_bound_task(queue_item)
+        
+        # TODO multiprocessing to avoid blocking thread
+        # cpu_bound_task(queue_item)
+        # model.process_image(queue_item.image)
         
         # update db with url when successful
         # TODO add check if processing unsuccessful (res is invalid)
-        id_db[queue_item.id] = res
         
-        # tell the queue that the processing on the task is completed
-        q.task_done()
+        # tell the queue that the process has been created
+        # q.task_done()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    q = asyncio.Queue()  # note that asyncio.Queue() is not thread safe
-    pool = ProcessPoolExecutor()
-    asyncio.create_task(model_loop(q, pool)) # Start the requests processing task
-    app.q = q
+    request_q = mp.Queue()
+    loop = mp.Process(target=model_loop, args=[request_q], daemon=True)
+    loop.start()
+    
+    app.q = request_q
     yield
-    pool.shutdown()  
-    # free any resources that the pool is using when the currently pending futures are done executing
-
+    loop.kill()
 
 app = FastAPI(lifespan=lifespan)
-
 
 @app.get("/")
 async def root():
