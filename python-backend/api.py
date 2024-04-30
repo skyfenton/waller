@@ -52,7 +52,7 @@ def model_loop(request_q: mp.Queue):
             WHERE id = {queue_item.id}')
         # tell the queue that the process has been created
         # q.task_done()
-        
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -83,7 +83,7 @@ async def queue_image(file: UploadFile):
   image = await file.read()
   # TODO move db actions to external db class
   db.exec_query('INSERT INTO img_status (status) VALUES ("queued")')
-  id = db.exec_query('SELECT * FROM img_status ORDER BY id DESC LIMIT 1')[0][0]
+  id = db.exec_query('SELECT * FROM img_status ORDER BY id DESC LIMIT 1')[0]
   
   # TODO return error if can't put item in queue
   app.q.put_nowait(ProcessImageItem(id, image))
@@ -99,7 +99,7 @@ async def get_data(id):
   res = db.exec_query(f'SELECT * FROM img_status WHERE id = {id}')
   if not res:
     raise HTTPException(404, "Item not found")
-  return {"status" : res[0][1]}
+  return {"status" : res[1]}
   
 @app.delete("/{id}", status_code=200)
 async def delete_data(id):

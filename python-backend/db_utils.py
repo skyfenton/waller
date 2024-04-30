@@ -1,6 +1,6 @@
 import sqlite3
 
-SQL_DB_NAME = "temp/waller.db"
+SQL_DB_NAME = "data/waller.db"
 
 def exec_query(query):
   con = sqlite3.connect(SQL_DB_NAME)
@@ -8,7 +8,7 @@ def exec_query(query):
     res = con.execute(query).fetchall()
     print(res)
   con.close()
-  return res
+  return res[0] if len(res) == 1 else res
 
 def setup():
   exec_query(
