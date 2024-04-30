@@ -33,25 +33,16 @@ def model_loop(request_q: mp.Queue):
           f'UPDATE img_status\
             SET status = "processing"\
             WHERE id = {queue_item.id}')
-        # loop = asyncio.get_running_loop()
-        # do the thing
-        # NOTE this "await" blocks the loop, so another image in queue will not be processed until this finishes
-        # res = await loop.run_in_executor(pool, model.process_image, queue_item.image)
-        # p = mp.Process(target=run_and_queue, args=[model.process_image, queue_item.image, response_q], daemon=True)
-        cpu_bound_task(queue_item)
         
-        # TODO multiprocessing to avoid blocking thread
-        # cpu_bound_task(queue_item)
+        # do the thing
+        cpu_bound_task(queue_item)
         # model.process_image(queue_item.image)
         
-        # update db with url when successful
         # TODO add check if processing unsuccessful (res is invalid)
         db.exec_query(
           f'UPDATE img_status\
             SET status = "done"\
             WHERE id = {queue_item.id}')
-        # tell the queue that the process has been created
-        # q.task_done()
 
 
 @asynccontextmanager
@@ -81,7 +72,7 @@ async def queue_image(file: UploadFile):
   # NOTE this loads file content into memory, can get overloaded
   # TODO save file locally while waiting to be processed in queue
   image = await file.read()
-  # TODO move db actions to external db class
+
   db.exec_query('INSERT INTO img_status (status) VALUES ("queued")')
   id = db.exec_query('SELECT * FROM img_status ORDER BY id DESC LIMIT 1')[0]
   
