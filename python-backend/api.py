@@ -3,25 +3,16 @@ from dataclasses import dataclass
 
 from contextlib import asynccontextmanager
 import multiprocessing as mp
-
-import sqlite3
-
 import time
-import random
-import waller_lib as waller
+
+import db_utils as db
+
 
 @dataclass
 class ProcessImageItem:
   id: str
   image: bytes
 
-id_db={}
-
-def get_free_id() -> str:
-  while True:
-    id = str(random.randint(0, 99999))
-    if id not in id_db:
-      return id
 
 # Computationally Intensive Task
 def cpu_bound_task(item: ProcessImageItem):
@@ -31,12 +22,17 @@ def cpu_bound_task(item: ProcessImageItem):
       time.sleep(1)
     return 'ok'
 
+
 def model_loop(request_q: mp.Queue):
     # model = waller.WallerProcess()
     while True:
         # wait until request in queue
         queue_item: ProcessImageItem = request_q.get(block=True)
-        
+
+        db.exec_query(
+          f'UPDATE img_status\
+            SET status = "processing"\
+            WHERE id = {queue_item.id}')
         # loop = asyncio.get_running_loop()
         # do the thing
         # NOTE this "await" blocks the loop, so another image in queue will not be processed until this finishes
@@ -50,10 +46,13 @@ def model_loop(request_q: mp.Queue):
         
         # update db with url when successful
         # TODO add check if processing unsuccessful (res is invalid)
-        
+        db.exec_query(
+          f'UPDATE img_status\
+            SET status = "done"\
+            WHERE id = {queue_item.id}')
         # tell the queue that the process has been created
         # q.task_done()
-
+        
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -76,30 +75,31 @@ Queues image for processing and returns "200" with a unique item id, if possible
 '''
 @app.post("/upload", status_code=200)
 async def queue_image(file: UploadFile):
-  # TODO add file content type check for images
-  uri = get_free_id()
+  # TODO add type check for file type = images
   
   # pass content to queue
   # NOTE this loads file content into memory, can get overloaded
   # TODO save file locally while waiting to be processed in queue
   image = await file.read()
-  # TODO return error if can't put item in queue
-  app.q.put_nowait(ProcessImageItem(uri, image))
-  
   # TODO move db actions to external db class
-  id_db[uri] = "queued"
+  db.exec_query('INSERT INTO img_status (status) VALUES ("queued")')
+  id = db.exec_query('SELECT * FROM img_status ORDER BY id DESC LIMIT 1')[0][0]
+  
+  # TODO return error if can't put item in queue
+  app.q.put_nowait(ProcessImageItem(id, image))
   
   # return file_id
-  return {"id" : uri}
+  return {"id" : id}
   
 '''
 Retrieves processed image status with this id, or if does not exist or still processing, a corresponding status code.
 '''
 @app.get("/{id}", status_code=200)
 async def get_data(id):
-  if id not in id_db:
+  res = db.exec_query(f'SELECT * FROM img_status WHERE id = {id}')
+  if not res:
     raise HTTPException(404, "Item not found")
-  return {"status": id_db[id]}
+  return {"status" : res[0][1]}
   
 @app.delete("/{id}", status_code=200)
 async def delete_data(id):
@@ -108,5 +108,12 @@ async def delete_data(id):
   # return "unimplemented"
 
 if __name__ == '__main__':
+  # TODO add arg parser to let user skip db setup
+  # import argparse
+  # parser = argparse.ArgumentParser(description='Run API webserver for processing requests.')
+  # parser.add_argument('--clean', )
+  db.teardown()
+  db.setup()
+  
   import uvicorn
   uvicorn.run(app)

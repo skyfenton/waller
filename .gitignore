@@ -159,5 +159,5 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# directory for input/output files/images, except 
-temp/
+# directory for input/output files/images and database file 
+data/
