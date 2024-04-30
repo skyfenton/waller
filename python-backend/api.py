@@ -73,8 +73,10 @@ async def queue_image(file: UploadFile):
   # TODO save file locally while waiting to be processed in queue
   image = await file.read()
 
-  db.exec_query('INSERT INTO img_status (status) VALUES ("queued")')
-  id = db.exec_query('SELECT * FROM img_status ORDER BY id DESC LIMIT 1')[0]
+  id = db.exec_queries(
+    'INSERT INTO img_status (status) VALUES ("queued")',
+    'SELECT last_insert_rowid()'
+    )[0]
   
   # TODO return error if can't put item in queue
   app.q.put_nowait(ProcessImageItem(id, image))
@@ -87,10 +89,10 @@ Retrieves processed image status with this id, or if does not exist or still pro
 '''
 @app.get("/{id}", status_code=200)
 async def get_data(id):
-  res = db.exec_query(f'SELECT * FROM img_status WHERE id = {id}')
+  res = db.exec_query(f'SELECT status FROM img_status WHERE id = {id}')
   if not res:
     raise HTTPException(404, "Item not found")
-  return {"status" : res[1]}
+  return {"status" : res[0]}
   
 @app.delete("/{id}", status_code=200)
 async def delete_data(id):
