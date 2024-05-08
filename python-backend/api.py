@@ -120,7 +120,8 @@ async def delete_data(id):
 
 
 if __name__ == '__main__':
-  # TODO add arg parser to let user skip db setup
+  # TODO add arg parser to let user skip db setup,
+  # run stall instead of model, localhost
   # import argparse
   # parser = argparse.ArgumentParser(description='Run API webserver for processing requests.')
   # parser.add_argument('--clean', )
