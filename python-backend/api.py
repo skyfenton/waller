@@ -1,11 +1,17 @@
+# load environment variables
+from dotenv import load_dotenv
+load_dotenv()
+
+# REST API 
 from fastapi import FastAPI, HTTPException, UploadFile
 from dataclasses import dataclass
-import aiofiles
 
+# Async processing
 from contextlib import asynccontextmanager
+import aiofiles
 import multiprocessing as mp
-# import time
 
+# Local files 
 import waller_lib as waller
 import db_utils as db
 
@@ -14,15 +20,6 @@ import db_utils as db
 class ProcessImageItem:
   id: str
   path: str
-
-
-# # Computationally Intensive Task
-# def cpu_bound_task(item: ProcessImageItem):
-#     print(f"Processing: {item.id}")
-#     for i in range(15):
-#       print(i, end=" ", flush=True)
-#       time.sleep(1)
-#     return 'ok'
 
 
 def model_loop(request_q: mp.Queue):
@@ -130,6 +127,7 @@ if __name__ == '__main__':
   db.teardown()
   db.setup()
   
+  import os
   import uvicorn
-  uvicorn.run(app)
+  uvicorn.run(app, host=os.getenv('HOST'), port=int(os.getenv('PORT')))
   # uvicorn.run("api:app", reload=True)
