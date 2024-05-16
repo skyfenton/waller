@@ -4,5 +4,5 @@ data/
 # directory for temporary test files
 tmp/
 
-# pnpm dependencies
+# pnpm stuff (recommended to ignore)
 .pnpm-store
