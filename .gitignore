@@ -2,7 +2,7 @@
 data/
 
 # directory for temporary test files
-temp/
+tmp/
 
 # pnpm dependencies
 .pnpm-store
