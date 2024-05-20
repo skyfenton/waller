@@ -9,7 +9,8 @@ module.exports = {
     'plugin:react/recommended',
     'plugin:react/jsx-runtime',
   ],
-  ignorePatterns: ['dist', '.eslintrc.cjs'],
+  // ignore current directory but unignore all subdirectories
+  ignorePatterns: ['dist', '/*', '!/**/*/', 'node_modules/*'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 'latest',
@@ -24,4 +25,4 @@ module.exports = {
       { allowConstantExport: true },
     ],
   },
-}
+};

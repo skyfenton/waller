@@ -12,7 +12,9 @@
 			"extensions": [
 				"njpwerner.autodocstring",
 				"charliermarsh.ruff",
-				"dbaeumer.vscode-eslint"
+				"dbaeumer.vscode-eslint",
+				"bradlc.vscode-tailwindcss",
+				"rvest.vs-code-prettier-eslint"
 			]
 		}
 	},
