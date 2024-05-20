@@ -7,7 +7,7 @@ module.exports = {
     `plugin:@typescript-eslint/stylistic-type-checked`,
     'plugin:react-hooks/recommended',
     'plugin:react/recommended',
-    'plugin:react/jsx-runtime',
+    'plugin:react/jsx-runtime'
   ],
   // ignore current directory but unignore all subdirectories
   ignorePatterns: ['dist', '/*', '!/**/*/', 'node_modules/*'],
@@ -16,13 +16,10 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module',
     project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
+    tsconfigRootDir: __dirname
   },
   plugins: ['react-refresh'],
   rules: {
-    'react-refresh/only-export-components': [
-      'warn',
-      { allowConstantExport: true },
-    ],
-  },
+    'react-refresh/only-export-components': ['warn', { allowConstantExport: true }]
+  }
 };
