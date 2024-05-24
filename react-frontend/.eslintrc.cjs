@@ -7,7 +7,7 @@ module.exports = {
     `plugin:@typescript-eslint/stylistic-type-checked`,
     'plugin:react/recommended',
     'plugin:react/jsx-runtime',
-    'plugin:react-hooks/recommended',
+    // 'plugin:react-hooks/recommended',
     'plugin:tailwindcss/recommended',
     'plugin:prettier/recommended'
   ],
@@ -30,7 +30,8 @@ module.exports = {
     'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
-    'tailwindcss/no-custom-classname': 'off'
+    'tailwindcss/no-custom-classname': 'off',
+    'prettier/prettier': 'warn'
   },
   settings: {
     react: {
