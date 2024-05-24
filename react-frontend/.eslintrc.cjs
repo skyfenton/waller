@@ -5,9 +5,9 @@ module.exports = {
     'eslint:recommended',
     'plugin:@typescript-eslint/strict-type-checked',
     `plugin:@typescript-eslint/stylistic-type-checked`,
-    // 'plugin:react-hooks/recommended',
     'plugin:react/recommended',
     'plugin:react/jsx-runtime',
+    'plugin:react-hooks/recommended',
     'plugin:tailwindcss/recommended',
     'plugin:prettier/recommended'
   ],
@@ -25,9 +25,12 @@ module.exports = {
     project: ['./tsconfig.json', './tsconfig.node.json'],
     tsconfigRootDir: __dirname
   },
-  plugins: ['react-refresh'],
+  plugins: ['react', 'react-hooks', 'react-refresh'],
   rules: {
-    'react-refresh/only-export-components': ['warn', { allowConstantExport: true }]
+    'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': 'off',
+    'tailwindcss/no-custom-classname': 'off'
   },
   settings: {
     react: {
