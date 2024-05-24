@@ -1,36 +1,20 @@
-import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
-import './App.css';
+import { useUploadFile } from '@/hooks/use-upload-file';
+import { FileUploader } from './components/file-uploader';
 
 function App() {
-  const [count, setCount] = useState(0);
+  const { uploadFiles, progresses, uploadedFiles, isUploading } = useUploadFile('imageUploader', {
+    defaultUploadedFiles: []
+  });
 
   return (
-    <div className=" min-h-screen min-w-[320px] ">
-      <div className=" flex place-content-center ">
-        <a className="" href="https://vitejs.dev" target="_blank" rel="noreferrer">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" rel="noreferrer">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1 className=" text-3xl text-foreground ">Vite + React + Me</h1>
-      <div className="card">
-        <button
-          className=" rounded-lg border-2 border-border px-5 py-3 transition hover:bg-secondary focus-visible:outline-4 focus-visible:outline-ring"
-          onClick={() => {
-            setCount((count) => count + 1);
-          }}
-        >
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">Click on the Vite and React logos to learn more</p>
+    <div className=" flex min-h-screen flex-col place-content-center ">
+      <FileUploader
+        maxFiles={1}
+        maxSize={2 * 1024 * 1024}
+        progresses={progresses}
+        onUpload={uploadFiles}
+        disabled={isUploading}
+      />
     </div>
   );
 }
