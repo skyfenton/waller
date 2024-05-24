@@ -5,12 +5,19 @@ module.exports = {
     'eslint:recommended',
     'plugin:@typescript-eslint/strict-type-checked',
     `plugin:@typescript-eslint/stylistic-type-checked`,
-    'plugin:react-hooks/recommended',
+    // 'plugin:react-hooks/recommended',
     'plugin:react/recommended',
-    'plugin:react/jsx-runtime'
+    'plugin:react/jsx-runtime',
+    'plugin:tailwindcss/recommended',
+    'plugin:prettier/recommended'
   ],
   // ignore current directory but unignore all subdirectories
   ignorePatterns: ['dist', '/*', '!/**/*/', 'node_modules/*'],
+  overrides: [
+    {
+      files: ['*.ts', '*.tsx', '*.js'],
+    }
+  ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 'latest',
@@ -21,5 +28,10 @@ module.exports = {
   plugins: ['react-refresh'],
   rules: {
     'react-refresh/only-export-components': ['warn', { allowConstantExport: true }]
+  },
+  settings: {
+    react: {
+      version: "detect"
+    }
   }
 };
