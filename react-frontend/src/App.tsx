@@ -1,18 +1,18 @@
 import { useUploadFile } from '@/hooks/use-upload-file';
-import { FileUploader } from './components/file-uploader';
+import { SingleFileUploader } from './components/file-uploader';
 
 function App() {
-  const { uploadFiles, progresses, uploadedFiles, isUploading } = useUploadFile('imageUploader', {
+  const { uploadFile, progress, uploadedFiles, isUploading } = useUploadFile('imageUploader', {
     defaultUploadedFiles: []
   });
 
   return (
-    <div className=" flex min-h-screen flex-col place-content-center ">
-      <FileUploader
-        maxFiles={1}
+    <div className=" container flex min-h-screen flex-col place-content-center ">
+      <SingleFileUploader
         maxSize={2 * 1024 * 1024}
-        progresses={progresses}
-        onUpload={uploadFiles}
+        progress={progress}
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        onUpload={() => new Promise(() => {})}
         disabled={isUploading}
       />
     </div>
