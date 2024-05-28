@@ -136,6 +136,8 @@ export function SingleFileUploader(props: FileUploaderProps) {
     // const newFiles = files.filter((_, i) => i !== index);
     setFile(undefined);
     onValueChange?.(undefined);
+    toast.dismiss();
+    toast.message('Upload cancelled');
   }
 
   // Revoke preview url when component unmounts
@@ -146,7 +148,6 @@ export function SingleFileUploader(props: FileUploaderProps) {
         URL.revokeObjectURL(file.preview);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const isDisabled = disabled || file !== undefined;
