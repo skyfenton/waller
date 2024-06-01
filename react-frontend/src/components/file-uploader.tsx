@@ -10,10 +10,8 @@ import Dropzone, {
 import { toast } from 'sonner';
 
 import { cn, formatBytes, isFileWithPreview } from '@/lib/utils';
-// import { useControllableState } from "@/hooks/use-controllable-state"
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
@@ -103,6 +101,8 @@ export function SingleFileUploader(props: FileUploaderProps) {
         toast.error(`A file has already been uploaded`);
         return;
       }
+
+      // TODO: Add check for file type before assigning preview
 
       const newFile = Object.assign(acceptedFiles[0], {
         preview: URL.createObjectURL(acceptedFiles[0])
@@ -194,7 +194,7 @@ export function SingleFileUploader(props: FileUploaderProps) {
                 ) : (
                   <div className="space-y-px">
                     <p className="text-muted-foreground font-medium">
-                      Drag {`'n`} drop an image here, or click to select an
+                      Drag {`'n'`} drop an image here, or click to select an
                       image
                     </p>
                     <p className="text-muted-foreground/70 text-sm">
