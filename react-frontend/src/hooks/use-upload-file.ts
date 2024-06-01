@@ -3,7 +3,7 @@
 import * as React from 'react';
 import axios, { type AxiosResponse } from 'axios';
 // import type { UploadedFile } from "@/types"
-import { toast } from 'sonner';
+// import { toast } from 'sonner';
 // import type { UploadFilesOptions } from "uploadthing/types"
 
 // import { getErrorMessage } from "@/lib/handle-error"
@@ -20,42 +20,37 @@ import { toast } from 'sonner';
 
 export function useUploadFile(
   // endpoint: keyof OurFileRouter,
-  defaultUploadedFiles = []
+  defaultUploadedFile = undefined
 ) {
-  const [uploadedFiles, setUploadedFiles] = React.useState<File[]>(defaultUploadedFiles);
-  const [progresses, setProgresses] = React.useState<Record<string, number>>({});
+  const [processedFile, setProcessedFile] = React.useState<File | undefined>(
+    defaultUploadedFile
+  );
+  const [progress, setProgress] = React.useState<number | undefined>(undefined);
   const [isUploading, setIsUploading] = React.useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async function uploadFiles(files: File[]) {
+  async function processFile(file: File) {
     setIsUploading(true);
     try {
-      const res = await axios.post(
-        (process.env.REACT_APP_SERVER_URL ?? 'NO_ENV') + '/upload',
-        { file: file },
+      const res = await axios.postForm(
+        (import.meta.env.VITE_SERVER_URL as string) + '/upload',
         {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-          // onUploadProgress: props.onUploadProgress,
+          file: file
         }
       );
 
-      setUploadedFiles((prev) => (prev ? [...prev, ...res] : res));
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        toast.error(err.message);
-      }
+      console.log(res);
+
+      setProcessedFile(file);
     } finally {
-      setProgresses({});
+      setProgress(undefined);
       setIsUploading(false);
     }
   }
 
   return {
-    uploadedFiles,
-    progresses,
-    uploadFiles: uploadFiles,
+    processedFile,
+    progress,
+    processFile,
     isUploading
   };
 }

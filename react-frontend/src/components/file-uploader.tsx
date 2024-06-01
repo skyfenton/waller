@@ -9,7 +9,7 @@ import Dropzone, {
 } from 'react-dropzone';
 import { toast } from 'sonner';
 
-import { cn, formatBytes } from '@/lib/utils';
+import { cn, formatBytes, isFileWithPreview } from '@/lib/utils';
 // import { useControllableState } from "@/hooks/use-controllable-state"
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -123,7 +123,9 @@ export function SingleFileUploader(props: FileUploaderProps) {
             setFile(undefined);
             return `File uploaded`;
           },
-          error: `Failed to upload file`
+          error: (err) => {
+            if (err instanceof Error) return err.message;
+          }
         });
       }
     },
@@ -275,8 +277,4 @@ function FileCard({ file, progress, onRemove }: FileCardProps) {
       </div>
     </div>
   );
-}
-
-function isFileWithPreview(file: File): file is File & { preview: string } {
-  return 'preview' in file && typeof file.preview === 'string';
 }

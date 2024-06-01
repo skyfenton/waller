@@ -23,3 +23,9 @@ export function formatBytes(
     sizeType === 'accurate' ? accurateSizes[i] ?? 'Bytest' : sizes[i] ?? 'Bytes'
   }`;
 }
+
+export function isFileWithPreview(
+  file: File
+): file is File & { preview: string } {
+  return 'preview' in file && typeof file.preview === 'string';
+}
