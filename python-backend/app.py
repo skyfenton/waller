@@ -16,7 +16,7 @@ import processing
 import routes
 
 
-ORIGINS = ["http://localhost", "http://127.0.0.1"]
+ORIGINS = ["http://localhost:5173"]
 
 
 @asynccontextmanager
@@ -31,14 +31,15 @@ async def lifespan(app: FastAPI):
     loop.kill()
 
 
-def create_app() -> CORSMiddleware:
+def create_app() -> FastAPI:
     """Create app wrapper to overcome middleware issues."""
     app = FastAPI(lifespan=lifespan)
-    app.include_router(routes.router)
-    return CORSMiddleware(
-        app,
+    app.add_middleware(
+        CORSMiddleware,
         allow_origins=ORIGINS,
-        allow_credentials=True,
-        allow_methods=["*"],
+        # allow_credentials=True,
+        allow_methods=["GET", "POST", "DELETE"],
         allow_headers=["*"],
     )
+    app.include_router(routes.router)
+    return app
