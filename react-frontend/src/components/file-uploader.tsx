@@ -177,37 +177,29 @@ export function SingleFileUploader(props: FileUploaderProps) {
             {...dropzoneProps}
           >
             <input {...getInputProps()} />
-            {isDragActive ? (
-              <div className="flex flex-col items-center justify-center gap-4 sm:px-5">
-                <div className="rounded-full border border-dashed p-3">
-                  <UploadIcon
-                    className="text-muted-foreground size-7"
-                    aria-hidden="true"
-                  />
-                </div>
-                <p className="text-muted-foreground font-medium">
-                  Drop the files here
-                </p>
+            <div className="flex flex-col items-center justify-center gap-4 sm:px-5">
+              <div className="rounded-full border border-dashed p-3">
+                <UploadIcon
+                  className="text-muted-foreground size-7"
+                  aria-hidden="true"
+                />
               </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center gap-4 sm:px-5">
-                <div className="rounded-full border border-dashed p-3">
-                  <UploadIcon
-                    className="text-muted-foreground size-7"
-                    aria-hidden="true"
-                  />
-                </div>
+              {isDragActive ? (
+                <p className="text-muted-foreground font-medium">
+                  Drop the file here
+                </p>
+              ) : (
                 <div className="space-y-px">
                   <p className="text-muted-foreground font-medium">
-                    Drag {`'n'`} drop files here, or click to select files
+                    Drag {`'n`} drop an image here, or click to select an image
                   </p>
                   <p className="text-muted-foreground/70 text-sm">
-                    {`You can upload a file with a max size of 
+                    {`You can upload an image with a max size of 
                     ${formatBytes(maxSize)}`}
                   </p>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
       </Dropzone>
