@@ -1,21 +1,9 @@
+import { SingleFileUploader } from '@/components/file-uploader';
 import { useUploadFile } from '@/hooks/use-upload-file';
-import { SingleFileUploader } from './components/file-uploader';
+import { isFileWithPreview } from '@/lib/utils';
 
-import { Toaster } from '@/components/ui/sonner';
-import { isFileWithPreview } from './lib/utils';
-import { useEffect } from 'react';
-
-function App() {
-  // TODO refactor useUploadFile to talk to backend (and then replace temp
-  // values in component)
+export default function UploadPage() {
   const { processFile, progress, processedFile, isUploading } = useUploadFile();
-
-  useEffect(() => {
-    // TODO: consider moving check to a more sensible place?
-    if (!import.meta.env.VITE_SERVER_URL) {
-      throw new Error('VITE_SERVER_URL is not set');
-    }
-  }, []);
 
   return (
     <>
@@ -36,9 +24,6 @@ function App() {
           />
         )}
       </div>
-      <Toaster />
     </>
   );
 }
-
-export default App;
