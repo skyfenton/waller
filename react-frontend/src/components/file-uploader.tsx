@@ -157,7 +157,9 @@ export function SingleFileUploader(props: FileUploaderProps) {
   return (
     <div className="relative flex flex-col gap-6 overflow-hidden">
       {file ? (
-        <FileCard file={file} onRemove={onRemove} progress={progress} />
+        <div className=" mx-auto w-5/12 ">
+          <FileCard file={file} onRemove={onRemove} progress={progress} />
+        </div>
       ) : (
         <Dropzone
           onDrop={onDrop}
