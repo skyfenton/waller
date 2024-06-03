@@ -1,0 +1,4 @@
+{
+  "eslint.format.enable": true,
+  "css.lint.unknownAtRules": "ignore"
+}

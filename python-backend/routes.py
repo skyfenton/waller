@@ -1,90 +1,22 @@
-"""
-Script to run local http server with routes to create, remove, and read image
-segmentation jobs.
-"""
-# API framework
-from fastapi import FastAPI, HTTPException, UploadFile
-from dataclasses import dataclass
+from fastapi import APIRouter, Request, HTTPException, UploadFile
 
 # Async processing
-import multiprocessing as mp
-from contextlib import asynccontextmanager
 import aiofiles
 
 # Local files
-import waller_lib as waller
 import db
+import processing
+
+router = APIRouter()
 
 
-@dataclass
-class ProcessJobItem:
-    """
-    Dataclass for queuing segmentation jobs by bundling ids with save_path.
-
-    Attributes:
-        id (str): ID of job.
-        src_path (str): Path to source image on disk. Included since although
-        img name is its id, the extension may either be .jpg or .png, and it was
-        slightly easier to store src path rather than just extension.
-
-    Todo:
-        * Refactor ids from str to ints
-        * Refactor src_path to just specify file type
-        * Move job queue from memory to disk to decrease memory usage and
-        increase queue storage (non-urgent, shouldn't have enough jobs
-        queued to make impact on performance).
-    """
-
-    id: str
-    src_path: str
-
-
-def model_loop(request_q: mp.Queue):
-    model = waller.WallerProcess()
-    print("Model loaded")
-    while True:
-        # wait until request in queue
-        job_item: ProcessJobItem = request_q.get(block=True)
-
-        db.exec_query(
-            f'UPDATE img_status\
-            SET status = "processing"\
-            WHERE id = {job_item.id}'
-        )
-
-        # do the thing
-        # cpu_bound_task(queue_item)
-        model.process_image(job_item.src_path, f"data/processed/{job_item.id}.png")
-
-        # TODO add check if processing unsuccessful (res is invalid)
-        db.exec_query(
-            f'UPDATE img_status\
-            SET status = "done"\
-            WHERE id = {job_item.id}'
-        )
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    request_q = mp.Queue()
-    loop = mp.Process(target=model_loop, args=[request_q], daemon=True)
-    loop.start()
-
-    app.q = request_q
-    yield
-    loop.kill()
-
-
-app = FastAPI(lifespan=lifespan)
-
-
-@app.get("/")
+@router.get("/")
 async def root():
     return {"message": "Hello World, I am listening."}
 
 
-@app.post("/upload", status_code=200)
-async def queue_image(file: UploadFile) -> dict:
+@router.post("/upload", status_code=200)
+async def queue_image(file: UploadFile, request: Request) -> dict:
     """
     POST request endpoint to save an uploaded image and queue it for
     segmentation. File is saved in the 'queued' folder under the data folder
@@ -95,6 +27,7 @@ async def queue_image(file: UploadFile) -> dict:
     Args:
         file (UploadFile): Multipart file to run image segmentation inference
         on, which must be a jpeg/png image under 2MB.
+        request (Request): Request object used to get model_loop queue.
 
     Raises:
         HTTPException: 400 code if file over 2MB
@@ -131,12 +64,12 @@ async def queue_image(file: UploadFile) -> dict:
         while content := await file.read(1024):  # async read chunk
             await out_file.write(content)  # async write chunk
 
-    app.q.put_nowait(ProcessJobItem(id, save_path))
+    request.app.q.put_nowait(processing.JobItem(id, save_path))
 
     return {"id": id}
 
 
-@app.get("/{id}", status_code=200)
+@router.get("/{id}", status_code=200)
 async def get_data(id: int) -> dict:
     """
     GET endpoint for getting status of given id in status database (img_status).
@@ -158,7 +91,7 @@ async def get_data(id: int) -> dict:
     return {"status": res[0]}
 
 
-@app.delete("/{id}", status_code=200)
+@router.delete("/{id}", status_code=200)
 async def delete_data(id: int):
     """
     DELETE endpoint for removing images from storage. Responds with 200 OK if
