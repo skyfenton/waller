@@ -10,7 +10,14 @@ from dotenv import dotenv_values
 from app import create_app
 import db
 
+import shutil
+import os
+
 # TODO add CLI with click package
+
+shutil.rmtree("data", ignore_errors=True)
+os.makedirs("data/processed")
+os.makedirs("data/queued")
 
 db.teardown()
 db.setup()
