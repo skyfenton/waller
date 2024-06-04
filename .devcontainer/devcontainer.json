@@ -9,7 +9,6 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"njpwerner.autodocstring",
 				"charliermarsh.ruff",
 				"dbaeumer.vscode-eslint",
 				"bradlc.vscode-tailwindcss"
