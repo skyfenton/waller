@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, HTTPException, UploadFile
+from fastapi import FastAPI, APIRouter, Request, HTTPException, UploadFile
 
 # Async processing
 import aiofiles
@@ -15,23 +15,62 @@ async def root():
     return {"message": "Hello World, I am listening."}
 
 
-@router.post("/upload", status_code=200)
-async def queue_image(file: UploadFile, request: Request) -> dict:
+async def save_file(file, path):
+    file.file.seek(0)
+    async with aiofiles.open(path, "wb") as out_file:
+        while content := await file.read(1024):  # async read chunk
+            await out_file.write(content)  # async write chunk
+
+            
+async def queue_job(app: FastAPI, job: processing.JobItem):
+    """
+    Queue job for processing in given app
+    
+    Args:
+        app (FastAPI): FastAPI app with multiprocessing queue attribute - 'q'.
+        job (processing.JobItem): JobItem object to queue.
+        
+    Todo:
+        * Refactor FastAPI object to strictly define 'q' attribute. Right now, q
+          gets defined in lifespan, but app does not run lifespan during
+          testing, so testing upload_image throws AttributeError. Moved the
+          app.q access here to avoid this (since this function should be mocked
+          during testing), but not ideal solution.
+          
+    """    
+    
+    app.q.put_nowait(job)
+    db.exec_query(
+        f"""UPDATE Jobs
+            SET StatusID = 1
+            WHERE id = {id}"""
+    )
+
+@router.post("/jobs", status_code=201)
+async def upload_image(file: UploadFile, request: Request) -> dict:
     """
     POST request endpoint to save an uploaded image and queue it for
     segmentation. File is saved in the 'queued' folder under the data folder
-    specified by the DATA_PATH environment variable '##.jpeg/png' where ## is
-    the generated server-side id associated to the image. If successful,
-    responds with a 200 OK status code.
+    specified by the DATA_PATH environment variable '##.jpeg/jpg/png' where ##
+    is the generated server-side id associated to the image. If successful,
+    responds with a 201 Created status code.
+
+    Note, this loads the file into a memory/disk buffer which can be overloaded
+    with many requests. Can be mitigated by handling as a custom stream,
+    however, I don't care (jk, just not worth adding complexity when I'm the
+    only one using this service). See:
+    https://fastapi.tiangolo.com/tutorial/request-files/#file-parameters-with-uploadfile
+    
+    Question... Do multipart form data requests time out if it takes too long?
 
     Args:
         file (UploadFile): Multipart file to run image segmentation inference
-        on, which must be a jpeg/png image under 2MB.
+        on, which must be a jpeg, jpg, or png image under 2MB.
         request (Request): Request object used to get model_loop queue.
 
     Raises:
         HTTPException: 400 code if file over 2MB
-        HTTPException: 400 if file not jpeg or png
+        HTTPException: 400 if file not jpeg, jpg, or png
 
     Returns:
         dict: JSON body response with the newly generated unique job id
@@ -50,33 +89,30 @@ async def queue_image(file: UploadFile, request: Request) -> dict:
 
     # check the content type (MIME type)
     content_type = file.content_type
-    if content_type not in ["image/jpeg", "image/png"]:
+    if content_type not in ["image/jpeg", "image/jpg", "image/png"]:
         raise HTTPException(status_code=400, detail="Invalid file type")
 
+    # Create new row for job (new job's StatusID: 0 - "uploading")
     id = db.exec_queries(
-        'INSERT INTO img_status (status) VALUES ("queued")',
+        "INSERT INTO Jobs DEFAULT VALUES",
         "SELECT last_insert_rowid()",
     )[0]
-
+    
     save_path = f"data/queued/{id}.{content_type.rsplit("/", 1)[1]}"
-    file.file.seek(0)
-    async with aiofiles.open(save_path, "wb") as out_file:
-        while content := await file.read(1024):  # async read chunk
-            await out_file.write(content)  # async write chunk
-
-    request.app.q.put_nowait(processing.JobItem(id, save_path))
+    await save_file(file, save_path)
+    await queue_job(request.app, processing.JobItem(id, save_path))
 
     return {"id": id}
 
 
-@router.get("/{id}", status_code=200)
+@router.get("/jobs/{id}", status_code=200)
 async def get_data(id: int) -> dict:
     """
     GET endpoint for getting status of given id in status database (img_status).
     Responds with 200 OK if successful.
 
     Args:
-        id (int): Id of job to query.
+        id (int): ID of job to query.
 
     Raises:
         HTTPException: 404: { "Item not found" } if id not found in database.
@@ -85,17 +121,21 @@ async def get_data(id: int) -> dict:
         dict: JSON response with status of item.
     """
 
-    res = db.exec_query(f"SELECT status FROM img_status WHERE id = {id}")
+    res = db.exec_query(
+        f"""SELECT Statuses.Desc
+            FROM Jobs JOIN Statuses USING StatusID 
+            WHERE id = {id}"""
+    )
     if not res:
         raise HTTPException(404, "Item not found")
     return {"status": res[0]}
 
 
-@router.delete("/{id}", status_code=200)
+@router.delete("/jobs/{id}", status_code=200)
 async def delete_data(id: int):
     """
-    DELETE endpoint for removing images from storage. Responds with 200 OK if
-    successful.
+    DELETE endpoint for removing job and its related resources. Responds with
+    200 OK if successful.
 
     Args:
         id (int): ID of job/image to delete.

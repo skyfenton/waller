@@ -31,8 +31,21 @@ async def lifespan(app: FastAPI):
     loop.kill()
 
 
-def create_app() -> FastAPI:
-    """Create app wrapper to overcome middleware issues."""
+def create_app(multiprocess: bool = True) -> FastAPI:
+    """
+    Wrapper to create FastAPI app with middleware and routes
+    Args:
+        multiprocess (bool, optional): If True, app runs lifespan function to
+        manage processing.model_loop() in a new process. Defaults to True
+        (should be set to False for testing).
+
+    Returns:
+        FastAPI: FastAPI app object
+    """
+    if not multiprocess:
+        lifespan = None
+    else:
+        lifespan = lifespan
     app = FastAPI(lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,

@@ -25,15 +25,30 @@ def exec_queries(*queries):
 
 
 def setup():
-    exec_query(
-        "CREATE TABLE IF NOT EXISTS img_status(\
-        id integer primary key autoincrement,\
-        status varchar(20) )"
+    exec_queries(
+        """CREATE TABLE IF NOT EXISTS Statuses
+        (
+        StatusID integer primary key,
+        Desc varchar(20) not null
+        )""",
+        """CREATE TABLE IF NOT EXISTS Jobs
+        (
+        JobID integer primary key autoincrement,
+        StatusID integer not null default 0,
+        FOREIGN KEY(StatusID) REFERENCES Statuses(StatusID)
+        )""",
+        """INSERT INTO Statuses (StatusID, Desc)
+        VALUES
+            (0, "uploading"),
+            (1, "queued"),
+            (2, "processing"),
+            (3, "done")    
+        """,
     )
 
 
 def teardown():
-    exec_query("DROP TABLE IF EXISTS img_status")
+    exec_queries("DROP TABLE IF EXISTS Jobs", "DROP TABLE IF EXISTS Statuses")
 
 
 if __name__ == "__main__":
@@ -43,7 +58,8 @@ if __name__ == "__main__":
     setup()
 
     id = exec_queries(
-        'INSERT INTO img_status (status) VALUES ("queued")',
+        "INSERT INTO Jobs DEFAULT VALUES",
         "SELECT last_insert_rowid()",
-    )
-    exec_query("SELECT id FROM img_status")
+    )[0]
+    query = exec_query(f"SELECT * FROM Jobs WHERE JobID = {id}")
+    print(query)

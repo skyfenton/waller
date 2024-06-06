@@ -36,9 +36,9 @@ def model_loop(request_q: mpQueue):
         job: JobItem = request_q.get(block=True)
 
         db.exec_query(
-            f'UPDATE img_status\
-            SET status = "processing"\
-            WHERE id = {job.id}'
+            f"""UPDATE Jobs
+                SET StatusID = 2
+                WHERE id = {job.id}"""
         )
 
         # do the thing
@@ -47,7 +47,7 @@ def model_loop(request_q: mpQueue):
 
         # TODO add check if processing unsuccessful (res is invalid)
         db.exec_query(
-            f'UPDATE img_status\
-            SET status = "done"\
-            WHERE id = {job.id}'
+            f"""UPDATE Jobs
+                SET StatusID = 3
+                WHERE id = {job.id}"""
         )
