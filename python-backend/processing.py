@@ -38,7 +38,7 @@ def model_loop(request_q: mpQueue):
         db.exec_query(
             f"""UPDATE Jobs
                 SET StatusID = 2
-                WHERE id = {job.id}"""
+                WHERE JobID = {job.id}"""
         )
 
         # do the thing
@@ -49,5 +49,5 @@ def model_loop(request_q: mpQueue):
         db.exec_query(
             f"""UPDATE Jobs
                 SET StatusID = 3
-                WHERE id = {job.id}"""
+                WHERE JobID = {job.id}"""
         )

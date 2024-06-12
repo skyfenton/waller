@@ -21,30 +21,31 @@ async def save_file(file, path):
         while content := await file.read(1024):  # async read chunk
             await out_file.write(content)  # async write chunk
 
-            
+
 async def queue_job(app: FastAPI, job: processing.JobItem):
     """
     Queue job for processing in given app
-    
+
     Args:
         app (FastAPI): FastAPI app with multiprocessing queue attribute - 'q'.
         job (processing.JobItem): JobItem object to queue.
-        
+
     Todo:
         * Refactor FastAPI object to strictly define 'q' attribute. Right now, q
           gets defined in lifespan, but app does not run lifespan during
           testing, so testing upload_image throws AttributeError. Moved the
           app.q access here to avoid this (since this function should be mocked
           during testing), but not ideal solution.
-          
-    """    
-    
+
+    """
+
     app.q.put_nowait(job)
     db.exec_query(
-        f"""UPDATE Jobs
+        f""" UPDATE Jobs
             SET StatusID = 1
-            WHERE id = {id}"""
+            WHERE JobID = {job.id}"""
     )
+
 
 @router.post("/jobs", status_code=201)
 async def upload_image(file: UploadFile, request: Request) -> dict:
@@ -60,7 +61,7 @@ async def upload_image(file: UploadFile, request: Request) -> dict:
     however, I don't care (jk, just not worth adding complexity when I'm the
     only one using this service). See:
     https://fastapi.tiangolo.com/tutorial/request-files/#file-parameters-with-uploadfile
-    
+
     Question... Do multipart form data requests time out if it takes too long?
 
     Args:
@@ -97,7 +98,7 @@ async def upload_image(file: UploadFile, request: Request) -> dict:
         "INSERT INTO Jobs DEFAULT VALUES",
         "SELECT last_insert_rowid()",
     )[0]
-    
+
     save_path = f"data/queued/{id}.{content_type.rsplit("/", 1)[1]}"
     await save_file(file, save_path)
     await queue_job(request.app, processing.JobItem(id, save_path))
@@ -123,8 +124,8 @@ async def get_data(id: int) -> dict:
 
     res = db.exec_query(
         f"""SELECT Statuses.Desc
-            FROM Jobs JOIN Statuses USING StatusID 
-            WHERE id = {id}"""
+            FROM Jobs JOIN Statuses USING (StatusID) 
+            WHERE Jobs.JobID = {id}"""
     )
     if not res:
         raise HTTPException(404, "Item not found")
