@@ -15,20 +15,8 @@ from contextlib import asynccontextmanager
 import processing
 import routes
 
-
+# TODO replace with env variable
 ORIGINS = ["http://localhost:5173"]
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    request_q = mp.Queue()
-    loop = mp.Process(target=processing.model_loop, args=[request_q], daemon=True)
-    loop.start()
-
-    app.q = request_q
-    yield
-    # kill model queue when app is closed
-    loop.kill()
 
 
 def create_app(multiprocess: bool = True) -> FastAPI:
@@ -42,11 +30,22 @@ def create_app(multiprocess: bool = True) -> FastAPI:
     Returns:
         FastAPI: FastAPI app object
     """
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        request_q = mp.Queue()
+        loop = mp.Process(target=processing.model_loop, args=[request_q], daemon=True)
+        loop.start()
+
+        app.q = request_q
+        yield
+        # kill model queue when app is closed
+        loop.kill()
+    
     if not multiprocess:
-        lifespan = None
+        app = FastAPI()
     else:
-        lifespan = lifespan
-    app = FastAPI(lifespan=lifespan)
+        app = FastAPI(lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=ORIGINS,
