@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from multiprocessing import Queue as mpQueue
 
 # Local files
-import waller_lib as waller
 import db
+import waller_lib as waller
 
 @dataclass
 class JobItem:
@@ -42,7 +42,6 @@ def model_loop(request_q: mpQueue):
         )
 
         # do the thing
-        # cpu_bound_task(queue_item)
         model.process_image(job.src_path, f"data/processed/{job.id}.png")
 
         # TODO add check if processing unsuccessful (res is invalid)

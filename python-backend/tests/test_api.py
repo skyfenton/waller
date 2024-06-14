@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 @pytest.fixture()
 def test_client():
     main.reset_storage()
-    with TestClient(WallerAPI.create_app(multiprocess=False)) as client:
+    with TestClient(WallerAPI.create_app(multiprocess='none')) as client:
         yield client  # testing happens here
 
 
