@@ -9,10 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 
-// interface FileCardProps {
-//   file: File;
-//   onRemove?: () => void;
-// }
+interface JobData {
+  status: string;
+}
 
 export default function ProgressCard(props: {
   file: File;
@@ -32,7 +31,7 @@ export default function ProgressCard(props: {
       if (props.id !== '') {
         console.log('polling', props.id);
         axios
-          .get(
+          .get<JobData>(
             (import.meta.env.VITE_SERVER_URL as string) + `/jobs/${props.id}`
           )
           .then((res) => {
