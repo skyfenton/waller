@@ -1,9 +1,9 @@
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 
 import { SingleFileUploader } from '@/components/file-uploader';
 import { useRef } from 'react';
 
-interface UploadData extends AxiosResponse {
+interface UploadData {
   id: string;
 }
 
@@ -11,7 +11,7 @@ export default function UploadPage() {
   const abortControllerRef = useRef<AbortController>(new AbortController());
 
   async function uploadFile(file: File) {
-    const res = await axios.postForm<UploadResponse>(
+    const res = await axios.postForm<UploadData>(
       (import.meta.env.VITE_SERVER_URL as string) + '/jobs',
       {
         file: file

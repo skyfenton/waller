@@ -27,7 +27,7 @@ export default function ProgressCard(props: {
     setProgress(25);
     let apiTimeout = setTimeout(pollAPI, 1000);
     function pollAPI() {
-      // TODO: Update uploading 
+      // TODO: Update uploading
       if (props.id !== '') {
         console.log('polling', props.id);
         axios
