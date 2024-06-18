@@ -26,12 +26,14 @@ export default function UploadPage() {
 
   async function cancelJob(id: string) {
     abortControllerRef.current.abort();
+    abortControllerRef.current = new AbortController();
     await axios.delete(
       (import.meta.env.VITE_SERVER_URL as string) + `/jobs/${id}`,
       {
         signal: AbortSignal.timeout(5000)
       }
     );
+
   }
 
   return (
