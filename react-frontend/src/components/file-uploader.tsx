@@ -97,6 +97,7 @@ export function SingleFileUploader(props: FileUploaderProps) {
     ...dropzoneProps
   } = props;
 
+  // TODO: Combine file and id into a single object
   const [file, setFile] = React.useState(valueProp);
   const [jobID, setJobID] = React.useState('');
 
@@ -180,7 +181,7 @@ export function SingleFileUploader(props: FileUploaderProps) {
   return (
     <div className="relative flex flex-col gap-6 overflow-hidden">
       {file ? (
-        <div className=" mx-auto w-5/12 ">
+        <div className=" mx-auto w-full max-w-2xl ">
           <ProgressCard file={file} id={jobID} onCancel={cancelJob} />
         </div>
       ) : (
@@ -188,9 +189,7 @@ export function SingleFileUploader(props: FileUploaderProps) {
           onDrop={onDrop}
           accept={accept}
           maxSize={maxSize}
-          // maxFiles={1}
           multiple={false}
-          // disabled={isDisabled}
         >
           {({ getRootProps, getInputProps, isDragActive }) => (
             <div
