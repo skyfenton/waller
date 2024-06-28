@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Cross2Icon, UploadIcon } from '@radix-ui/react-icons';
+import { UploadIcon } from '@radix-ui/react-icons';
 import Dropzone, {
   type DropzoneProps,
   type FileRejection
@@ -10,8 +10,7 @@ import Dropzone, {
 import { toast } from 'sonner';
 
 import { cn, formatBytes, isFileWithPreview } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
+import ProgressCard from '@/components/progress-card';
 
 interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
@@ -31,12 +30,21 @@ interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
   onValueChange?: React.Dispatch<React.SetStateAction<File | undefined>>;
 
   /**
-   * Function to be called when a file is uploaded.
-   * @type (file: File) => Promise<void>
+   * Function to be called when a file is uploaded. Function should return a
+   * resource id as a string.
+   * @type (file: File) => Promise<string>
    * @default undefined
    * @example onUpload={(file) => uploadFile(file)}
    */
-  onUpload?: (file: File) => Promise<void>;
+  onUpload?: (file: File) => Promise<string>;
+
+  /**
+   * Function to be called when a file processing job is cancelled.
+   * @type (id: string) => Promise<void>
+   * @default undefined
+   * @example onCancel={(id) => cancelJob(id)}
+   */
+  onCancel?: (id: string) => Promise<void>;
 
   /**
    * Progress of the uploaded files.
@@ -78,8 +86,9 @@ export function SingleFileUploader(props: FileUploaderProps) {
   // Unpacks props into consts based on name, remaining passed to Dropzone
   const {
     value: valueProp,
-    onValueChange,
+    // onValueChange,
     onUpload,
+    onCancel,
     progress,
     accept = { 'image/*': [] },
     maxSize = 1024 * 1024 * 2,
@@ -88,7 +97,9 @@ export function SingleFileUploader(props: FileUploaderProps) {
     ...dropzoneProps
   } = props;
 
+  // TODO: Combine file and id into a single object
   const [file, setFile] = React.useState(valueProp);
+  const [jobID, setJobID] = React.useState('');
 
   const onDrop = React.useCallback(
     (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
@@ -117,29 +128,42 @@ export function SingleFileUploader(props: FileUploaderProps) {
       }
 
       if (onUpload) {
-        toast.promise(onUpload(newFile), {
-          loading: `Uploading file...`,
-          success: () => {
-            setFile(undefined);
-            return `File uploaded`;
-          },
-          error: (err) => {
-            if (err instanceof Error) return err.message;
-          }
-        });
+        // Only toast on error, otherwise proceed
+        onUpload(newFile)
+          .then((id) => {
+            setJobID(id);
+          })
+          .catch((err: unknown) => {
+            if (err instanceof Error) {
+              console.error(err);
+              toast.error(err.message);
+            }
+          });
+        // toast.promise(onUpload(newFile), {
+        //   loading: `Uploading file...`,
+        //   success: () => {
+        //     // setUploadedFile(undefined);
+        //     return `File queued`;
+        //   },
+        //   error: (err) => {
+        //     if (err instanceof Error) return err.message;
+        //   }
+        // });
       }
     },
 
     [file, onUpload, setFile]
   );
 
-  function onRemove() {
-    if (!file) return;
-    // const newFiles = files.filter((_, i) => i !== index);
+  // need React.useCallback?
+  function cancelJob() {
+    if (onCancel) {
+      onCancel(jobID).catch((err: unknown) => {
+        if (err instanceof Error) toast.error(err.message);
+      });
+    }
+    setJobID('');
     setFile(undefined);
-    onValueChange?.(undefined);
-    toast.dismiss();
-    toast.message('Upload cancelled');
   }
 
   // Revoke preview url when component unmounts
@@ -152,22 +176,20 @@ export function SingleFileUploader(props: FileUploaderProps) {
     };
   }, []);
 
-  const isDisabled = disabled || file !== undefined;
+  // const isDisabled = disabled || uploadedFile !== undefined;
 
   return (
     <div className="relative flex flex-col gap-6 overflow-hidden">
       {file ? (
-        <div className=" mx-auto w-5/12 ">
-          <FileCard file={file} onRemove={onRemove} progress={progress} />
+        <div className=" mx-auto w-full max-w-2xl ">
+          <ProgressCard file={file} id={jobID} onCancel={cancelJob} />
         </div>
       ) : (
         <Dropzone
           onDrop={onDrop}
           accept={accept}
           maxSize={maxSize}
-          maxFiles={1}
           multiple={false}
-          disabled={isDisabled}
         >
           {({ getRootProps, getInputProps, isDragActive }) => (
             <div
@@ -176,7 +198,7 @@ export function SingleFileUploader(props: FileUploaderProps) {
                 'group relative grid h-52 w-full cursor-pointer place-items-center rounded-lg border-2 border-dashed border-muted-foreground/25 px-5 py-2.5 text-center transition hover:bg-muted/25',
                 'ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                 isDragActive && 'border-muted-foreground/50',
-                isDisabled && 'pointer-events-none opacity-60',
+                // isDisabled && 'pointer-events-none opacity-60',
                 className
               )}
               {...dropzoneProps}
@@ -210,54 +232,6 @@ export function SingleFileUploader(props: FileUploaderProps) {
           )}
         </Dropzone>
       )}
-    </div>
-  );
-}
-
-interface FileCardProps {
-  file: File;
-  onRemove: () => void;
-  progress?: number;
-}
-
-function FileCard({ file, progress, onRemove }: FileCardProps) {
-  return (
-    <div className="relative flex items-center space-x-4">
-      <div className="flex flex-1 space-x-4">
-        {isFileWithPreview(file) ? (
-          <img
-            src={file.preview}
-            alt={file.name}
-            width={48}
-            height={48}
-            loading="lazy"
-            className="aspect-square shrink-0 rounded-md object-cover"
-          />
-        ) : null}
-        <div className="flex w-full flex-col gap-2">
-          <div className="space-y-px">
-            <p className="text-foreground/80 line-clamp-1 text-sm font-medium">
-              {file.name}
-            </p>
-            <p className="text-muted-foreground text-xs">
-              {formatBytes(file.size)}
-            </p>
-          </div>
-          {progress ? <Progress value={progress} /> : null}
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="size-7"
-          onClick={onRemove}
-        >
-          <Cross2Icon className="size-4 " aria-hidden="true" />
-          <span className="sr-only">Remove file</span>
-        </Button>
-      </div>
     </div>
   );
 }
