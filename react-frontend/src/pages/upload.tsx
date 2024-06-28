@@ -8,6 +8,8 @@ interface UploadData {
 }
 
 export default function UploadPage() {
+  // Currently continuously polls API, consider using Server-Sent Events to
+  // avoid continuously opening a connection
   const abortControllerRef = useRef<AbortController>(new AbortController());
 
   async function uploadFile(file: File) {
@@ -33,7 +35,6 @@ export default function UploadPage() {
         signal: AbortSignal.timeout(5000)
       }
     );
-
   }
 
   return (
