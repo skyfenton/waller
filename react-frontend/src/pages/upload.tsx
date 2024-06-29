@@ -38,10 +38,8 @@ export default function UploadPage() {
   }
 
   return (
-    <>
-      <div className=" container flex min-h-screen flex-col place-content-center ">
-        <SingleFileUploader onUpload={uploadFile} onCancel={cancelJob} />
-      </div>
-    </>
+    <div className=" container flex min-h-screen flex-col place-content-center ">
+      <SingleFileUploader onUpload={uploadFile} onCancel={cancelJob} />
+    </div>
   );
 }
