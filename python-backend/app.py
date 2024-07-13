@@ -6,6 +6,7 @@ segmentation jobs.
 # API framework
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 # Async processing
 import multiprocessing as mp
@@ -101,4 +102,5 @@ def create_app(multiprocess='model') -> FastAPI:
         allow_headers=["*"],
     )
     app.include_router(routes.router)
+    app.mount("/images", StaticFiles(directory="data/processed"), name="images")
     return app
