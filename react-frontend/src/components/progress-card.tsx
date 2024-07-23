@@ -80,7 +80,7 @@ export default function ProgressCard(props: {
           <div className="flex w-full flex-col gap-2">
             {/* Title, size, and progress */}
             <div className="space-y-px">
-              <p className="text-foreground/80 line-clamp-1 text-sm font-medium">
+              <p className="text-foreground/80 text-md line-clamp-1 font-medium">
                 {props.file.name}
               </p>
               <p className="text-muted-foreground text-xs">
