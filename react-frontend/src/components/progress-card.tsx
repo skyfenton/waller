@@ -66,41 +66,43 @@ export default function ProgressCard(props: {
   }, [props.id]);
 
   return (
-    <div className="relative flex items-center space-x-4">
-      <div className="flex flex-1 space-x-4">
-        {isFileWithPreview(props.file) ? (
-          <img
-            src={props.file.preview}
-            alt={props.file.name}
-            width={48}
-            height={48}
-            loading="lazy"
-            className="aspect-square shrink-0 rounded-md object-cover"
-          />
-        ) : null}
-        <div className="flex w-full flex-col gap-2">
-          <div className="space-y-px">
-            <p className="text-foreground/80 line-clamp-1 text-sm font-medium">
-              {props.file.name}
-            </p>
-            <p className="text-muted-foreground text-xs">
-              {formatBytes(props.file.size)}
-            </p>
+    <div className="flex flex-col space-y-4">
+      {isFileWithPreview(props.file) ? (
+        <img
+          src={props.file.preview}
+          alt={props.file.name}
+          loading="lazy"
+          className="aspect-[4/2] w-auto shrink-0 rounded-md object-cover"
+        />
+      ) : null}
+      <div className="relative flex items-center space-x-4">
+        <div className="flex flex-1 space-x-4">
+          <div className="flex w-full flex-col gap-2">
+            {/* Title, size, and progress */}
+            <div className="space-y-px">
+              <p className="text-foreground/80 line-clamp-1 text-sm font-medium">
+                {props.file.name}
+              </p>
+              <p className="text-muted-foreground text-xs">
+                {formatBytes(props.file.size)}
+              </p>
+            </div>
+            <Progress value={progress} />
           </div>
-          <Progress value={progress} />
         </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="size-7"
-          onClick={props.onCancel}
-        >
-          <Cross2Icon className="size-4 " aria-hidden="true" />
-          <span className="sr-only">Remove file</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Cancel button */}
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="hover:bg-destructive size-7"
+            onClick={props.onCancel}
+          >
+            <Cross2Icon className="size-4 " aria-hidden="true" />
+            <span className="sr-only">Remove file</span>
+          </Button>
+        </div>
       </div>
     </div>
   );
