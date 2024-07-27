@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 
 import { cn, formatBytes, isFileWithPreview } from '@/lib/utils';
 import ProgressCard from '@/components/progress-card';
+import { WallerJob } from '@/types';
 
 interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
@@ -98,8 +99,7 @@ export function SingleFileUploader(props: FileUploaderProps) {
   } = props;
 
   // TODO: Combine file and id into a single object
-  const [file, setFile] = React.useState(valueProp);
-  const [jobID, setJobID] = React.useState('');
+  const [job, setJob] = React.useState<WallerJob>();
 
   const onDrop = React.useCallback(
     (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
@@ -108,18 +108,10 @@ export function SingleFileUploader(props: FileUploaderProps) {
         return;
       }
 
-      if (file !== undefined) {
+      if (job !== undefined) {
         toast.error(`A file has already been uploaded`);
         return;
       }
-
-      // TODO: Add check for file type before assigning preview
-
-      const newFile = Object.assign(acceptedFiles[0], {
-        preview: URL.createObjectURL(acceptedFiles[0])
-      });
-
-      setFile(newFile);
 
       if (rejectedFiles.length > 0) {
         rejectedFiles.forEach(({ file }) => {
@@ -127,11 +119,20 @@ export function SingleFileUploader(props: FileUploaderProps) {
         });
       }
 
+      // TODO: Add check for file type before assigning preview
+      const newFile = Object.assign(acceptedFiles[0], {
+        preview: URL.createObjectURL(acceptedFiles[0])
+      });
+
+
       if (onUpload) {
         // Only toast on error, otherwise proceed
         onUpload(newFile)
           .then((id) => {
-            setJobID(id);
+            setJob({
+              id,
+              image: newFile
+            });
           })
           .catch((err: unknown) => {
             if (err instanceof Error) {
@@ -152,26 +153,25 @@ export function SingleFileUploader(props: FileUploaderProps) {
       }
     },
 
-    [file, onUpload, setFile]
+    [job, onUpload, setJob]
   );
 
   // need React.useCallback?
   function cancelJob() {
-    if (onCancel) {
-      onCancel(jobID).catch((err: unknown) => {
+    if (onCancel && job) {
+      onCancel(job.id).catch((err: unknown) => {
         if (err instanceof Error) toast.error(err.message);
       });
     }
-    setJobID('');
-    setFile(undefined);
+    setJob(undefined);
   }
 
   // Revoke preview url when component unmounts
   React.useEffect(() => {
     return () => {
-      if (!file) return;
-      if (isFileWithPreview(file)) {
-        URL.revokeObjectURL(file.preview);
+      if (!job) return;
+      if (isFileWithPreview(job.image)) {
+        URL.revokeObjectURL(job.image.preview);
       }
     };
   }, []);
@@ -180,9 +180,9 @@ export function SingleFileUploader(props: FileUploaderProps) {
 
   return (
     <div className="relative flex flex-col gap-6 overflow-hidden">
-      {file ? (
+      {job ? (
         <div className=" mx-auto w-full max-w-2xl ">
-          <ProgressCard file={file} id={jobID} onCancel={cancelJob} />
+          <ProgressCard file={job.image} id={job.id} onCancel={cancelJob} />
         </div>
       ) : (
         <Dropzone
