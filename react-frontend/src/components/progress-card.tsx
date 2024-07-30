@@ -72,7 +72,7 @@ export default function ProgressCard(props: {
           src={props.file.preview}
           alt={props.file.name}
           loading="lazy"
-          className="aspect-[4/2] w-auto shrink-0 rounded-md object-cover"
+          className="aspect-[2/1] w-auto shrink-0 rounded-md object-cover"
         />
       ) : null}
       <div className="relative flex items-center space-x-4">
