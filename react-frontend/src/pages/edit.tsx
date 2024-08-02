@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
 import { WallerJob } from '@/types';
-import { Link } from 'react-router-dom';
 // TODO: Come up with better name than Edit/Image Page?
 
 export default function EditPage(props: {
@@ -11,7 +10,7 @@ export default function EditPage(props: {
   // TODO: Get image mask before editing
 
   return (
-    <div className="container min-h-screen">
+    <div className="container flex min-h-screen flex-col">
       <Button
         variant="destructive"
         onClick={() => {
@@ -21,7 +20,17 @@ export default function EditPage(props: {
       >
         Back to Upload
       </Button>
-      {props.job.id}
+      <p>id: {props.job.id}</p>
+      <div id="preview">
+        <img
+          src={
+            (import.meta.env.VITE_SERVER_URL as string) +
+            `/images/${props.job.id}.png`
+          }
+          className=""
+          alt={`Mask for ${props.job.image.name}`}
+        />
+      </div>
     </div>
   );
 }
