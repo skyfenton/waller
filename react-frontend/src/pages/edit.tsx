@@ -1,19 +1,27 @@
 import { Button } from '@/components/ui/button';
+import { WallerJob } from '@/types';
 import { Link } from 'react-router-dom';
 // TODO: Come up with better name than Edit/Image Page?
 
-export default function ImagePage() {
-  // Need:
-  // - uploaded image (stored locally on upload)
-  // AND
-  // - job id (to access mask from server)
-  //   (need to pair with uploaded image to avoid mismatching masks)
+export default function EditPage(props: {
+  job: WallerJob;
+  setJob: (job: WallerJob | undefined) => void;
+  setIsEditing: (isEditing: boolean) => void;
+}) {
+  // TODO: Get image mask before editing
 
   return (
     <div className="container min-h-screen">
-      <Link to="/">
-        <Button variant="destructive">Back to Upload</Button>
-      </Link>
+      <Button
+        variant="destructive"
+        onClick={() => {
+          props.setJob(undefined);
+          props.setIsEditing(false);
+        }}
+      >
+        Back to Upload
+      </Button>
+      {props.job.id}
     </div>
   );
 }

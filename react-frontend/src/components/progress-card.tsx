@@ -1,25 +1,22 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Cross2Icon } from '@radix-ui/react-icons';
-
-import axios from 'axios';
 
 import { formatBytes, isFileWithPreview } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 
-interface JobData {
-  status: string;
-}
+const logError = (err: unknown) => {
+  console.error(err);
+  if (err instanceof Error) toast.error(err.message);
+};
 
 export default function ProgressCard(props: {
   file: File;
-  id: string;
-  onCancel: () => void;
+  onPoll: () => Promise<number>;
+  onCancel: () => Promise<void>;
 }) {
   const [progress, setProgress] = useState(0);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // TODO: poll while uploading for progress accuracy?
@@ -27,43 +24,22 @@ export default function ProgressCard(props: {
     setProgress(25);
     let apiTimeout = setTimeout(pollAPI, 1000);
     function pollAPI() {
-      // TODO: Update uploading
-      if (props.id !== '') {
-        console.log('polling', props.id);
-        axios
-          .get<JobData>(
-            (import.meta.env.VITE_SERVER_URL as string) + `/jobs/${props.id}`
-          )
-          .then((res) => {
-            switch (res.data.status) {
-              case 'uploading':
-                setProgress(25);
-                break;
-              case 'queued':
-                setProgress(50);
-                break;
-              case 'processing':
-                setProgress(75);
-                break;
-              case 'done':
-                setProgress(100);
-                navigate(`/edit/${props.id}`);
-                break;
-            }
-          })
-          .catch((err: unknown) => {
-            console.error(err);
-            if (err instanceof Error) toast.error(err.message);
-            props.onCancel();
-          });
-      }
+      props
+        .onPoll()
+        .then((prog: number) => {
+          setProgress(prog);
+        })
+        .catch((err: unknown) => {
+          logError(err);
+          props.onCancel().catch(logError);
+        });
       apiTimeout = setTimeout(pollAPI, 1000);
     }
 
     return () => {
       clearTimeout(apiTimeout);
     };
-  }, [props.id]);
+  }, []);
 
   return (
     <div className="flex flex-col space-y-4">
@@ -97,7 +73,9 @@ export default function ProgressCard(props: {
             variant="outline"
             size="icon"
             className="hover:bg-destructive size-7"
-            onClick={props.onCancel}
+            onClick={() => {
+              props.onCancel().catch(logError);
+            }}
           >
             <Cross2Icon className="size-4 " aria-hidden="true" />
             <span className="sr-only">Remove file</span>
