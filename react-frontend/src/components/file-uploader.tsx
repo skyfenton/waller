@@ -110,8 +110,13 @@ export function SingleFileUploader(props: FileUploaderProps) {
       // }
 
       if (rejectedFiles.length > 0) {
-        rejectedFiles.forEach(({ file }) => {
-          toast.error(`File ${file.name} was rejected`);
+        rejectedFiles.forEach(({ file, errors }) => {
+          toast.error(
+            `File '${file.name}' was rejected (${errors
+              .map((error) => error.code)
+              .join(', ')})`
+          );
+          console.warn(`File '${file.name}' was rejected`, errors);
         });
       }
 
