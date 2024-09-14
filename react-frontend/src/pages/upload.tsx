@@ -34,6 +34,10 @@ export default function UploadPage(props: {
       }
     );
 
+    Object.assign(file, {
+      preview: URL.createObjectURL(file)
+    });
+
     props.setJob({ image: file, id: res.data.id });
   }
 

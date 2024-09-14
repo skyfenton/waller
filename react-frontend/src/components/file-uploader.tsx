@@ -115,19 +115,15 @@ export function SingleFileUploader(props: FileUploaderProps) {
         });
       }
 
-      const newFile = Object.assign(acceptedFiles[0], {
-        preview: URL.createObjectURL(acceptedFiles[0])
-      });
-
-      // Only toast on error, otherwise proceed
-      onUpload(newFile)
-        // .then(() => {})
-        .catch((err: unknown) => {
+      if (acceptedFiles.length > 0) {
+        // Only toast on error, otherwise proceed
+        onUpload(acceptedFiles[0]).catch((err: unknown) => {
           if (err instanceof Error) {
             console.error(err);
             toast.error(err.message);
           }
         });
+      }
       // toast.promise(onUpload(newFile), {
       //   loading: `Uploading file...`,
       //   success: () => {
