@@ -129,16 +129,6 @@ export function SingleFileUploader(props: FileUploaderProps) {
           }
         });
       }
-      // toast.promise(onUpload(newFile), {
-      //   loading: `Uploading file...`,
-      //   success: () => {
-      //     // setUploadedFile(undefined);
-      //     return `File queued`;
-      //   },
-      //   error: (err) => {
-      //     if (err instanceof Error) return err.message;
-      //   }
-      // });
     },
 
     [onUpload]
