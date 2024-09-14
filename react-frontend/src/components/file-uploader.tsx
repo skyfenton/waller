@@ -88,7 +88,6 @@ export function SingleFileUploader(props: FileUploaderProps) {
     // onValueChange,
     onUpload,
     // onCancel,
-    progress,
     accept = { 'image/*': [] },
     maxSize = 1024 * 1024 * 2,
     disabled = false,
@@ -116,7 +115,6 @@ export function SingleFileUploader(props: FileUploaderProps) {
         });
       }
 
-      // TODO: Add check for file type before assigning preview
       const newFile = Object.assign(acceptedFiles[0], {
         preview: URL.createObjectURL(acceptedFiles[0])
       });
