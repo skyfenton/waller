@@ -40,7 +40,7 @@ export default function App() {
   // return <RouterProvider router={router} />;
   return (
     <>
-      {isEditing ? (
+      {isEditing && job ? (
         <EditPage job={job} setJob={setJob} setIsEditing={setIsEditing} />
       ) : (
         <UploadPage job={job} setJob={setJob} setIsEditing={setIsEditing} />
