@@ -17,7 +17,6 @@ interface JobData {
 export default function UploadPage(props: {
   job?: WallerJob;
   setJob: (job: WallerJob | undefined) => void;
-  setIsEditing: (isEditing: boolean) => void;
 }) {
   // NOTE: Currently continuously polls API, consider using Server-Sent Events
   // to avoid continuously opening a connection
@@ -38,7 +37,7 @@ export default function UploadPage(props: {
       preview: URL.createObjectURL(file)
     });
 
-    props.setJob({ image: file, id: res.data.id });
+    props.setJob({ id: res.data.id, image: file, processed: false });
   }
 
   async function pollJob(): Promise<number> {
@@ -56,7 +55,7 @@ export default function UploadPage(props: {
             case 'processing':
               return 75;
             case 'done':
-              props.setIsEditing(true);
+              props.setJob({ ...props.job, processed: true } as WallerJob);
               return 100;
             default:
               return 0;

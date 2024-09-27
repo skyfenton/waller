@@ -6,7 +6,6 @@ import { WallerJob } from '@/types';
 export default function EditPage(props: {
   job: WallerJob;
   setJob: (job: WallerJob | undefined) => void;
-  setIsEditing: (isEditing: boolean) => void;
 }) {
   // TODO: Get image mask before editing
   const mask =
@@ -37,7 +36,6 @@ export default function EditPage(props: {
         variant="destructive"
         onClick={() => {
           props.setJob(undefined);
-          props.setIsEditing(false);
         }}
       >
         Back to Upload

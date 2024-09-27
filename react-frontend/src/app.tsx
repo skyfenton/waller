@@ -5,22 +5,21 @@ import { WallerJob } from '@/types';
 
 export default function App() {
   const [job, setJob] = useState<WallerJob>();
-  const [isEditing, setIsEditing] = useState(false);
 
   // Load job from session storage on component mount
-  // useEffect(() => {
-  //   const storedJob = sessionStorage.getItem('job');
-  //   if (storedJob) {
-  //     setJob(JSON.parse(storedJob) as WallerJob);
-  //   }
-  // }, []);
+  useEffect(() => {
+    const storedJob = sessionStorage.getItem('job');
+    if (storedJob) {
+      setJob(JSON.parse(storedJob) as WallerJob);
+    }
+  }, []);
 
-  // // Save job to session storage on job change
-  // useEffect(() => {
-  //   if (job) {
-  //     sessionStorage.setItem('job', JSON.stringify(job));
-  //   }
-  // }, [job]);
+  // Save job to session storage on job change
+  useEffect(() => {
+    if (job) {
+      sessionStorage.setItem('job', JSON.stringify(job));
+    }
+  }, [job]);
 
   // TODO: Redirect all routes to / (for cosmetics, really)
 
@@ -40,10 +39,10 @@ export default function App() {
   // return <RouterProvider router={router} />;
   return (
     <>
-      {isEditing && job ? (
-        <EditPage job={job} setJob={setJob} setIsEditing={setIsEditing} />
+      {job?.processed ? (
+        <EditPage job={job} setJob={setJob} />
       ) : (
-        <UploadPage job={job} setJob={setJob} setIsEditing={setIsEditing} />
+        <UploadPage job={job} setJob={setJob} />
       )}
     </>
   );
