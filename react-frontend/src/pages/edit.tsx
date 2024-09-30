@@ -3,7 +3,7 @@ import { isFileWithPreview } from '@/lib/utils';
 import { WallerJob } from '@/types';
 
 import { Stage, Container, Sprite } from '@pixi/react';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 // TODO: Come up with better name than Edit/Image Page?
 
 export default function EditPage(props: {
@@ -27,8 +27,9 @@ export default function EditPage(props: {
       <div ref={previewDiv}>
         {isFileWithPreview(props.job.image) ? (
           <Stage
-            width={1280}
-            height={720}
+            width={1920}
+            height={1200}
+            style={{ width: '100%', height: '100%' }}
             options={{
               resizeTo: previewDiv.current as HTMLElement
               // backgroundAlpha: 0
