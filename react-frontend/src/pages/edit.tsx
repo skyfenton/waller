@@ -34,6 +34,11 @@ function getImage(src: File) {
             elementRef.current.clientWidth,
             elementRef.current.clientHeight
           ]);
+        } else {
+          console.warn(
+            'Cannot resize, elementRef.current is null...',
+            elementRef.current
+          );
         }
       });
     };
