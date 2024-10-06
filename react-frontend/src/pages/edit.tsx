@@ -28,6 +28,7 @@ function getImage(src: File) {
 // component folder
 const useResize = (elementRef: React.RefObject<HTMLElement>, ratio: number) => {
   // TODO: Pull up defaults to some kind of config file
+  // TODO: Cap max height to keep from scrolling out of view
   const [size, setSize] = useState([0, 0]);
 
   useEffect(() => {
@@ -90,7 +91,7 @@ export default function EditPage(props: {
             }}
           >
             <Container>
-              <Sprite image={jobImg} />
+              <Sprite width={width} height={height} image={jobImg} />
             </Container>
           </Stage>
         ) : (
