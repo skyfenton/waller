@@ -3,6 +3,7 @@ import { isFileWithPreview } from '@/lib/utils';
 import { WallerJob } from '@/types';
 
 import { Stage, Container, Sprite } from '@pixi/react';
+import { Sprite as SpriteObj } from 'pixi.js';
 import { useEffect, useState, useRef } from 'react';
 
 import { debounce } from 'lodash';
@@ -76,6 +77,7 @@ export default function EditPage(props: {
   const jobImg = getImage(props.job.image);
   const maskImgSrc =
     (import.meta.env.VITE_SERVER_URL as string) + `/images/${props.job.id}.png`;
+  const maskImgSprite = SpriteObj.from(maskImgSrc);
 
   const previewArea = useRef<HTMLDivElement>(null);
   const [width, height] = useResize(previewArea, jobImg.width / jobImg.height);
@@ -90,8 +92,14 @@ export default function EditPage(props: {
               autoDensity: true
             }}
           >
-            <Container>
-              <Sprite width={width} height={height} image={jobImg} />
+            <Container width={width} height={height} sortableChildren={true}>
+              <Sprite
+                width={width}
+                height={height}
+                image={jobImg}
+                zIndex={1}
+                mask={maskImgSprite}
+              />
             </Container>
           </Stage>
         ) : (
