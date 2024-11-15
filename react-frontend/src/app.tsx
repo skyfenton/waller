@@ -6,20 +6,20 @@ import { WallerJob } from '@/types';
 export default function App() {
   const [job, setJob] = useState<WallerJob>();
 
-  // Load job from session storage on component mount
-  useEffect(() => {
-    const storedJob = sessionStorage.getItem('job');
-    if (storedJob) {
-      setJob(JSON.parse(storedJob) as WallerJob);
-    }
-  }, []);
+  // // Load job from session storage on component mount
+  // useEffect(() => {
+  //   const storedJob = sessionStorage.getItem('job');
+  //   if (storedJob) {
+  //     setJob(JSON.parse(storedJob) as WallerJob);
+  //   }
+  // }, []);
 
-  // Save job to session storage on job change
-  useEffect(() => {
-    if (job) {
-      sessionStorage.setItem('job', JSON.stringify(job));
-    }
-  }, [job]);
+  // // Save job to session storage on job change
+  // useEffect(() => {
+  //   if (job) {
+  //     sessionStorage.setItem('job', JSON.stringify(job));
+  //   }
+  // }, [job]);
 
   // TODO: Redirect all routes to / (for cosmetics, really)
 
