@@ -10,7 +10,7 @@ interface RectangleProps {
   zIndex?: number;
 }
 
-export const Rectangle = PixiComponent<RectangleProps, Graphics>('Rectangle', {
+const Rectangle = PixiComponent<RectangleProps, Graphics>('Rectangle', {
   create: () => new Graphics(),
   applyProps: (ins, _, props) => {
     ins.zIndex = props.zIndex ?? 0;
@@ -20,3 +20,5 @@ export const Rectangle = PixiComponent<RectangleProps, Graphics>('Rectangle', {
     ins.endFill();
   }
 });
+
+export default Rectangle;
