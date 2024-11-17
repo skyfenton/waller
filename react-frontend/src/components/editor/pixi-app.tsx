@@ -1,10 +1,8 @@
-import { Stage, Container, Sprite, useApp } from '@pixi/react';
-import { Container as ContainerObj } from 'pixi.js';
-import Rectangle from '@/components/editor/rectangle';
-import { useEffect } from 'react';
+import { Stage, Container, Sprite, AppConsumer, withPixiApp, AppProvider, useApp } from '@pixi/react';
+import { Application, Color, ICanvas, Sprite as SpriteObj } from 'pixi.js';
+import { useRef } from 'react';
 import { WallerJob } from '@/types';
 import { isFileWithPreview } from '@/lib/utils';
-import { useResize } from '@/hooks/use-resize';
 
 /**
  * Given a file, returns an image element from the file's preview.
@@ -23,50 +21,46 @@ function getImage(src: File) {
   }
 }
 
-export default function PixiApp(props: {
-  job: WallerJob;
-  imageBoundContainer: React.RefObject<HTMLDivElement>;
-}) {
-  // const app = useApp();
-  //   console.log(app.stage.children);
+export default function Editor(props: {job: WallerJob, imageBoundContainer: React.RefObject<HTMLDivElement>}) {
+  const appRef = useRef<Application<ICanvas>>();
 
-  //   useEffect(() => {
-  //     app.stage.removeChildren();
-  //     const container = new ContainerObj();
-  //     app.stage.addChild(container);
-  //   }, [app]);
+  const onResize = () => {
+      if (!appRef.current!.resizeTo && props.imageBoundContainer.current !== null) {
+        appRef.current!.resizeTo = props.imageBoundContainer.current;
+      }
+      appRef.current!.queueResize();
+  };
 
-  const jobImg = getImage(props.job.image);
-  const [width, height] = useResize(
-    props.imageBoundContainer,
-    jobImg.width / jobImg.height
-  );
+  const init = (app: Application<ICanvas>) => {
+    console.debug("Initializing pixijs app");
+    appRef.current = app;
+    onResize();
+    window.addEventListener('resize', onResize);
+  };
+
 
   return (
     <Stage
-      width={width}
-      height={height}
+      onMount={init}
+      onUnmount={() => {
+        window.removeEventListener('resize', onResize);
+      }}
       options={{
-        autoDensity: true
+        backgroundColor: 'white', 
+        autoDensity: true,
+        resizeTo: undefined,
       }}
     >
-      <Container width={width} height={height} sortableChildren={true}>
-        {/* <Sprite
-          width={width}
-          height={height}
-          image={jobImg}
-          zIndex={1}
-          source={maskImgSrc}
-        /> */}
-        <Rectangle
+      <Container>
+        {/* <Rectangle
           x={0}
           y={0}
-          width={width}
-          height={height}
-          color="blue"
+          width={100}
+          height={100}
+          color="white"
           zIndex={0}
-        />
+        /> */}
       </Container>
     </Stage>
-  );
+  )
 }

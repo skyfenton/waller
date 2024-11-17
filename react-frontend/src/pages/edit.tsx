@@ -4,7 +4,7 @@ import { WallerJob } from '@/types';
 
 import { useRef } from 'react';
 
-import PixiApp from '@/components/editor/pixi-app';
+import Editor from '@/components/editor/pixi-app';
 
 // TODO: Come up with better name than Edit/Image Page?
 export default function EditPage(props: {
@@ -16,7 +16,7 @@ export default function EditPage(props: {
     <div className="container flex min-h-screen flex-col justify-evenly">
       <div ref={previewArea}>
         {isFileWithPreview(props.job.image) ? (
-          <PixiApp job={props.job} imageBoundContainer={previewArea} />
+          <Editor job={props.job} imageBoundContainer={previewArea} />
         ) : (
           <h3>Loading picture...</h3>
         )}
