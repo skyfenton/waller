@@ -1,6 +1,7 @@
 {
   "recommendations": [
     "njpwerner.autodocstring",
-    "yoavbls.pretty-ts-errors"
+    "yoavbls.pretty-ts-errors",
+    "bradlc.vscode-tailwindcss"
   ]
 }
