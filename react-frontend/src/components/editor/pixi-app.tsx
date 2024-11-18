@@ -1,6 +1,6 @@
 import { Stage, Container, Sprite } from '@pixi/react';
 import { Application, ICanvas, Sprite as SpriteObj } from 'pixi.js';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { WallerJob } from '@/types';
 import { isFileWithPreview } from '@/lib/utils';
 
@@ -21,12 +21,16 @@ function getImage(src: File): HTMLImageElement {
   }
 }
 
-export default function Editor(props: {job: WallerJob, imageBoundContainer: React.RefObject<HTMLDivElement>}) {
-  const appRef = useRef<Application<ICanvas>>();
+export default function Editor(props: {
+  job: WallerJob;
+  imageBoundContainer: React.RefObject<HTMLDivElement>;
+}) {
+  const appRef = useRef<Application>();
   const animIdRef = useRef<number>();
 
   const jobImg = getImage(props.job.image);
-  const jobImgRatio = jobImg.height/jobImg.width;
+  const jobImgRatio = jobImg.height / jobImg.width;
+  const [scale, setScale] = useState(1);
 
   // Consolidate resizing functions
   const cancelResize = () => {
@@ -34,7 +38,7 @@ export default function Editor(props: {job: WallerJob, imageBoundContainer: Reac
       cancelAnimationFrame(animIdRef.current);
       animIdRef.current = undefined;
     }
-  }
+  };
 
   const onResize = () => {
     cancelResize();
@@ -42,19 +46,22 @@ export default function Editor(props: {job: WallerJob, imageBoundContainer: Reac
       cancelResize();
       if (props.imageBoundContainer.current) {
         const w = props.imageBoundContainer.current.clientWidth;
-        appRef.current!.renderer.resize(w, w * jobImgRatio);
-        appRef.current!.render();
+        if (appRef.current) {
+          // state triggers (full canvas?) rerender, may be able to increase performance here
+          setScale(w / jobImg.width);
+          appRef.current.renderer.resize(w, w * jobImgRatio);
+          appRef.current.render();
+        }
       }
     });
   };
 
-  const init = (app: Application<ICanvas>) => {
-    console.debug("Initializing pixijs app...");
+  const init = (app: Application) => {
+    console.debug('Initializing pixijs app...');
     appRef.current = app;
     onResize();
     window.addEventListener('resize', onResize);
   };
-
 
   return (
     <Stage
@@ -63,21 +70,14 @@ export default function Editor(props: {job: WallerJob, imageBoundContainer: Reac
         window.removeEventListener('resize', onResize);
       }}
       options={{
-        backgroundColor: 'white', 
+        // backgroundColor: 'white',
         autoDensity: true,
-        resizeTo: undefined,
+        resizeTo: undefined
       }}
-      >
+    >
       <Container>
-        {/* <Rectangle
-          x={0}
-          y={0}
-          width={100}
-          height={100}
-          color="white"
-          zIndex={0}
-          /> */}
+        <Sprite image={jobImg} scale={scale} />
       </Container>
     </Stage>
-  )
+  );
 }
