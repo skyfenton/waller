@@ -1,5 +1,5 @@
-import { Stage, Container, Sprite, AppConsumer, withPixiApp, AppProvider, useApp } from '@pixi/react';
-import { Application, Color, ICanvas, Sprite as SpriteObj } from 'pixi.js';
+import { Stage, Container, Sprite } from '@pixi/react';
+import { Application, ICanvas, Sprite as SpriteObj } from 'pixi.js';
 import { useRef } from 'react';
 import { WallerJob } from '@/types';
 import { isFileWithPreview } from '@/lib/utils';
@@ -23,22 +23,22 @@ function getImage(src: File): HTMLImageElement {
 
 export default function Editor(props: {job: WallerJob, imageBoundContainer: React.RefObject<HTMLDivElement>}) {
   const appRef = useRef<Application<ICanvas>>();
-  const animRef = useRef<number>();
+  const animIdRef = useRef<number>();
 
   const jobImg = getImage(props.job.image);
   const jobImgRatio = jobImg.height/jobImg.width;
 
   // Consolidate resizing functions
   const cancelResize = () => {
-    if (animRef.current) {
-      cancelAnimationFrame(animRef.current);
-      animRef.current = undefined;
+    if (animIdRef.current) {
+      cancelAnimationFrame(animIdRef.current);
+      animIdRef.current = undefined;
     }
   }
 
   const onResize = () => {
     cancelResize();
-    animRef.current = requestAnimationFrame(() => {
+    animIdRef.current = requestAnimationFrame(() => {
       cancelResize();
       if (props.imageBoundContainer.current) {
         const w = props.imageBoundContainer.current.clientWidth;
