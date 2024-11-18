@@ -11,7 +11,7 @@ import { isFileWithPreview } from '@/lib/utils';
  * @returns An image element.
  * @throws If the file does not have a preview property.
  */
-function getImage(src: File) {
+function getImage(src: File): HTMLImageElement {
   if (isFileWithPreview(src)) {
     const img = new Image();
     img.src = src.preview;
@@ -23,16 +23,33 @@ function getImage(src: File) {
 
 export default function Editor(props: {job: WallerJob, imageBoundContainer: React.RefObject<HTMLDivElement>}) {
   const appRef = useRef<Application<ICanvas>>();
+  const animRef = useRef<number>();
+
+  const jobImg = getImage(props.job.image);
+  const jobImgRatio = jobImg.height/jobImg.width;
+
+  // Consolidate resizing functions
+  const cancelResize = () => {
+    if (animRef.current) {
+      cancelAnimationFrame(animRef.current);
+      animRef.current = undefined;
+    }
+  }
 
   const onResize = () => {
-      if (!appRef.current!.resizeTo && props.imageBoundContainer.current !== null) {
-        appRef.current!.resizeTo = props.imageBoundContainer.current;
+    cancelResize();
+    animRef.current = requestAnimationFrame(() => {
+      cancelResize();
+      if (props.imageBoundContainer.current) {
+        const w = props.imageBoundContainer.current.clientWidth;
+        appRef.current!.renderer.resize(w, w * jobImgRatio);
+        appRef.current!.render();
       }
-      appRef.current!.queueResize();
+    });
   };
 
   const init = (app: Application<ICanvas>) => {
-    console.debug("Initializing pixijs app");
+    console.debug("Initializing pixijs app...");
     appRef.current = app;
     onResize();
     window.addEventListener('resize', onResize);
@@ -50,7 +67,7 @@ export default function Editor(props: {job: WallerJob, imageBoundContainer: Reac
         autoDensity: true,
         resizeTo: undefined,
       }}
-    >
+      >
       <Container>
         {/* <Rectangle
           x={0}
@@ -59,7 +76,7 @@ export default function Editor(props: {job: WallerJob, imageBoundContainer: Reac
           height={100}
           color="white"
           zIndex={0}
-        /> */}
+          /> */}
       </Container>
     </Stage>
   )
