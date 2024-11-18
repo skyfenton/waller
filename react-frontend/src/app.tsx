@@ -29,6 +29,8 @@ export default function App() {
         sessionStorage.setItem('job', JSON.stringify(serialized));
       }
       ).catch((err) => {console.error(err)})
+    } else {
+      sessionStorage.removeItem('job');
     }
   }, [job]);
 
