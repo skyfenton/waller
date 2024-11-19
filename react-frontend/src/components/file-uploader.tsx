@@ -9,7 +9,7 @@ import Dropzone, {
 } from 'react-dropzone';
 import { toast } from 'sonner';
 
-import { cn, formatBytes, isFileWithPreview } from '@/lib/utils';
+import { cn, formatBytes } from '@/lib/utils';
 
 interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
