@@ -1,5 +1,5 @@
 import { Stage, Container, Sprite } from '@pixi/react';
-import { Application, ImageResource, Point } from 'pixi.js';
+import { Application, ImageResource } from 'pixi.js';
 import { useRef, useState } from 'react';
 import { WallerJob } from '@/types';
 import { isFileWithPreview } from '@/lib/utils';
