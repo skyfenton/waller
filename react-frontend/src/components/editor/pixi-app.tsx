@@ -71,6 +71,7 @@ export default function Editor(props: {
     }
 
     const srcImg = getImage(props.job.image);
+    app.renderer.resize(srcImg.width, srcImg.height);
     const srcTexture = new PIXI.Texture(new PIXI.BaseTexture(srcImg));
     PIXI.Assets.add({ alias: 'mask', src: maskImgURL });
 
@@ -80,10 +81,14 @@ export default function Editor(props: {
       .then((textures: Record<string, PIXI.SpriteSource>) => {
         // console.debug(textures);
         const bg = PIXI.Sprite.from(srcTexture);
-        const mask = PIXI.Sprite.from(textures.mask);
+        const mask = PIXI.Sprite.from(textures.mask, {
+          scaleMode: PIXI.SCALE_MODES.LINEAR
+        });
+        mask.width = srcImg.width;
+        mask.height = srcImg.height;
 
         bg.mask = mask;
-        app.stage.addChild(bg);
+        app.stage.addChild(bg, mask);
       })
       .catch((error: unknown) => {
         console.error(error);
