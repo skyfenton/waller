@@ -34,16 +34,7 @@ export default function Editor(props: {
 
   const maskImgURL =
     (import.meta.env.VITE_SERVER_URL as string) + `/images/${props.job.id}.png`;
-  // const [maskTex, setMaskTex] = useState<Texture>();
   const maskImgSrc = new ImageResource(maskImgURL);
-
-  // useEffect(() => {
-  //   Assets.load(maskImgSrc)
-  //     .then(setMaskTex)
-  //     .catch((err: unknown) => {
-  //       console.error(err);
-  //     });
-  // }, []);
 
   // Consolidate resizing functions
   const cancelResize = () => {
