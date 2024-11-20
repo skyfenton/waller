@@ -1,6 +1,6 @@
 import { Stage, Container, Sprite } from '@pixi/react';
-import { Application, Assets, ImageResource, Texture } from 'pixi.js';
-import { useEffect, useRef, useState } from 'react';
+import { Application, ImageResource, Point } from 'pixi.js';
+import { useRef, useState } from 'react';
 import { WallerJob } from '@/types';
 import { isFileWithPreview } from '@/lib/utils';
 
@@ -27,16 +27,17 @@ export default function Editor(props: {
 }) {
   const appRef = useRef<Application>();
   const animIdRef = useRef<number>();
-  const [appWidth, setAppWidth] = useState(1);
+  const [appWidth, setAppWidth] = useState(0);
 
   const jobImg = getImage(props.job.image);
   const jobImgRatio = jobImg.height / jobImg.width;
 
   const maskImgURL =
     (import.meta.env.VITE_SERVER_URL as string) + `/images/${props.job.id}.png`;
+  // TODO: find better way to read width of url (load asset to draw?)
   const maskImgSrc = new ImageResource(maskImgURL);
 
-  // Consolidate resizing functions
+  // TODO: Consolidate resizing functions
   const cancelResize = () => {
     if (animIdRef.current) {
       cancelAnimationFrame(animIdRef.current);
@@ -51,7 +52,8 @@ export default function Editor(props: {
       if (props.imageBoundContainer.current) {
         const w = props.imageBoundContainer.current.clientWidth;
         if (appRef.current) {
-          // state triggers (full canvas?) rerender, may be able to increase performance here
+          // NOTE: state triggers slow rerender, violates raf handler time
+          // TODO: need to modify to avoid slow sprite resizing
           setAppWidth(w);
           appRef.current.renderer.resize(w, w * jobImgRatio);
           appRef.current.render();
@@ -68,22 +70,20 @@ export default function Editor(props: {
   };
 
   return (
-    <>
-      <Stage
-        onMount={init}
-        onUnmount={() => {
-          window.removeEventListener('resize', onResize);
-        }}
-        options={{
-          // backgroundColor: 'white',
-          autoDensity: true
-        }}
-      >
-        <Container>
-          <Sprite image={jobImg} scale={appWidth / jobImg.width} />
-          <Sprite source={maskImgURL} scale={appWidth / maskImgSrc.width} />
-        </Container>
-      </Stage>
-    </>
+    <Stage
+      onMount={init}
+      onUnmount={() => {
+        window.removeEventListener('resize', onResize);
+      }}
+      options={{
+        // backgroundColor: 'white',
+        autoDensity: true
+      }}
+    >
+      <Container>
+        <Sprite image={jobImg} scale={appWidth / jobImg.width} />
+        <Sprite source={maskImgURL} scale={appWidth / maskImgSrc.width} />
+      </Container>
+    </Stage>
   );
 }
