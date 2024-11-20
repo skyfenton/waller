@@ -14,13 +14,13 @@ export default function EditPage(props: {
   const previewArea = useRef<HTMLDivElement>(null);
   return (
     <div className="container flex min-h-screen flex-col justify-evenly">
-      <div ref={previewArea}>
-        {isFileWithPreview(props.job.image) ? (
-          <Editor job={props.job} imageBoundContainer={previewArea} />
-        ) : (
-          <h3>Loading picture...</h3>
-        )}
-      </div>
+      {/* <div ref={previewArea}> */}
+      {isFileWithPreview(props.job.image) ? (
+        <Editor job={props.job} imageBoundContainer={previewArea} />
+      ) : (
+        <h3>Loading picture...</h3>
+      )}
+      {/* </div> */}
       <p>id: {props.job.id}</p>
       <Button
         variant="destructive"
