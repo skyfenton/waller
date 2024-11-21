@@ -25,11 +25,10 @@ export default function Editor(props: {
   job: WallerJob;
   imageBoundContainer: React.RefObject<HTMLDivElement>;
 }) {
-  // const animIdRef = useRef<number>();
-  // const [appWidth, setAppWidth] = useState(0);
+  // const [app, setApp] = useState<PIXI.Application>();
+  const appRef = useRef<PIXI.Application>();
 
-  // const jobImgRatio = jobImg.height / jobImg.width;
-
+  const srcImg = getImage(props.job.image);
   const maskImgURL =
     (import.meta.env.VITE_SERVER_URL as string) + `/images/${props.job.id}.png`;
   // TODO: find better way to read width of url (load asset to draw?)
@@ -60,40 +59,55 @@ export default function Editor(props: {
   //   });
   // };
 
-  const init = (canvas: HTMLCanvasElement) => {
-    const app = new PIXI.Application({
-      view: canvas,
-      backgroundColor: 'red'
-    });
-
+  const onMount = async (view: HTMLCanvasElement) => {
     if (!isFileWithPreview(props.job.image)) {
       return;
     }
+    appRef.current = new PIXI.Application();
+    await appRef.current.init({
+      // application options
+      view: view,
+      height: srcImg.height,
+      width: srcImg.width
+    });
+    // do pixi things
 
-    const srcImg = getImage(props.job.image);
-    app.renderer.resize(srcImg.width, srcImg.height);
-    const srcTexture = new PIXI.Texture(new PIXI.BaseTexture(srcImg));
-    PIXI.Assets.add({ alias: 'mask', src: maskImgURL });
+    appRef.current.renderer.resize(srcImg.width, srcImg.height);
 
-    const texturesPromise = PIXI.Assets.load(['mask']);
+    // PIXI.Assets.loadBundle('textures', [{ alias: 'wood', src:  }]);
+    // PIXI.Assets.add({ alias: 'mask', src:  });
 
-    texturesPromise
-      .then((textures: Record<string, PIXI.SpriteSource>) => {
-        // console.debug(textures);
-        const bg = PIXI.Sprite.from(srcTexture);
-        const mask = PIXI.Sprite.from(textures.mask, {
-          scaleMode: PIXI.SCALE_MODES.LINEAR
-        });
-        mask.width = srcImg.width;
-        mask.height = srcImg.height;
+    // const srcTexture = new PIXI.Texture(new PIXI.BaseTexture(srcImg));
+    const bg = PIXI.Sprite.from(srcImg);
+    const maskTexture: PIXI.Texture = await PIXI.Assets.load(maskImgURL);
+    const mask = PIXI.Sprite.from(maskTexture);
+    mask.width = srcImg.width;
+    mask.height = srcImg.height;
 
-        bg.mask = mask;
-        app.stage.addChild(bg, mask);
-      })
-      .catch((error: unknown) => {
-        console.error(error);
-      });
+    bg.mask = mask;
+    appRef.current.stage.addChild(bg, mask);
   };
 
-  return <canvas id="editor" ref={init} />;
+  const canvasHandler = (canvas: HTMLCanvasElement | null) => {
+    if (canvas) {
+      console.debug('initializing app');
+      onMount(canvas).catch((err: unknown) => {
+        console.error(err);
+      });
+    } else {
+      console.debug('destroying app');
+      // console.debug(PIXI.Assets.get('mask'));
+      // console.debug(PIXI.Assets.resolver.hasKey('mask'));
+      // PIXI.Assets.unloadBundle();
+      // PIXI.Assets.unload('mask').catch((error: unknown) => {
+      //   console.error(error);
+      // });
+      // PIXI.Assets.reset();
+      appRef.current?.destroy(true, true);
+      // console.debug(PIXI.Assets);
+      appRef.current = undefined;
+    }
+  };
+
+  return <canvas id="editor" ref={canvasHandler} />;
 }
