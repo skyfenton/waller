@@ -31,33 +31,6 @@ export default function Editor(props: {
   const srcImg = getImage(props.job.image);
   const maskImgURL =
     (import.meta.env.VITE_SERVER_URL as string) + `/images/${props.job.id}.png`;
-  // TODO: find better way to read width of url (load asset to draw?)
-  // const maskImgSrc = new ImageResource(maskImgURL);
-
-  // TODO: Consolidate resizing functions
-  // const cancelResize = () => {
-  //   if (animIdRef.current) {
-  //     cancelAnimationFrame(animIdRef.current);
-  //     animIdRef.current = undefined;
-  //   }
-  // };
-
-  // const onResize = () => {
-  //   cancelResize();
-  //   animIdRef.current = requestAnimationFrame(() => {
-  //     cancelResize();
-  //     if (props.imageBoundContainer.current) {
-  //       const w = props.imageBoundContainer.current.clientWidth;
-  //       if (appRef.current) {
-  //         // NOTE: state triggers slow rerender, violates raf handler time
-  //         // TODO: need to modify to avoid slow sprite resizing
-  //         setAppWidth(w);
-  //         appRef.current.renderer.resize(w, w * jobImgRatio);
-  //         appRef.current.render();
-  //       }
-  //     }
-  //   });
-  // };
 
   const onMount = async (canvas: HTMLCanvasElement) => {
     if (!isFileWithPreview(props.job.image)) {
@@ -72,13 +45,15 @@ export default function Editor(props: {
       height: srcImg.height,
       width: srcImg.width
     });
-    // do pixi things
+
+    // TODO: cleanup warning about not using CanvasSource
+    const bg = PIXI.Sprite.from(srcImg);
+
+    const maskTexture: PIXI.Texture = await PIXI.Assets.load(maskImgURL);
+    const mask = PIXI.Sprite.from(maskTexture);
 
     // PIXI.Assets.loadBundle('textures', [{ alias: 'wood', src:  }]);
 
-    const bg = PIXI.Sprite.from(srcImg);
-    const maskTexture: PIXI.Texture = await PIXI.Assets.load(maskImgURL);
-    const mask = PIXI.Sprite.from(maskTexture);
     mask.width = srcImg.width;
     mask.height = srcImg.height;
 
