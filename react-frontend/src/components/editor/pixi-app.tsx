@@ -1,6 +1,6 @@
 // import { Stage, Container, Sprite } from '@pixi/react';
 import * as PIXI from 'pixi.js';
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { WallerJob } from '@/types';
 import { isFileWithPreview } from '@/lib/utils';
 
@@ -21,11 +21,11 @@ function getImage(src: File): HTMLImageElement {
   }
 }
 
-export default function Editor(props: {
+interface EditorProps extends React.HTMLAttributes<HTMLCanvasElement> {
   job: WallerJob;
-  imageBoundContainer: React.RefObject<HTMLDivElement>;
-}) {
-  // const [app, setApp] = useState<PIXI.Application>();
+}
+
+export default function Editor(props: EditorProps) {
   const appRef = useRef<PIXI.Application>();
 
   const srcImg = getImage(props.job.image);
@@ -84,5 +84,5 @@ export default function Editor(props: {
     });
   };
 
-  return <canvas id="editor" ref={canvasHandler} />;
+  return <canvas ref={canvasHandler} {...props} />;
 }
