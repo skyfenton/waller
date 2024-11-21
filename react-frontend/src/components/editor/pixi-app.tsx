@@ -59,25 +59,23 @@ export default function Editor(props: {
   //   });
   // };
 
-  const onMount = async (view: HTMLCanvasElement) => {
+  const onMount = async (canvas: HTMLCanvasElement) => {
     if (!isFileWithPreview(props.job.image)) {
-      return;
+      throw new Error(
+        `File ${props.job.image.name} does not have a preview property`
+      );
     }
     appRef.current = new PIXI.Application();
     await appRef.current.init({
       // application options
-      view: view,
+      canvas: canvas,
       height: srcImg.height,
       width: srcImg.width
     });
     // do pixi things
 
-    appRef.current.renderer.resize(srcImg.width, srcImg.height);
-
     // PIXI.Assets.loadBundle('textures', [{ alias: 'wood', src:  }]);
-    // PIXI.Assets.add({ alias: 'mask', src:  });
 
-    // const srcTexture = new PIXI.Texture(new PIXI.BaseTexture(srcImg));
     const bg = PIXI.Sprite.from(srcImg);
     const maskTexture: PIXI.Texture = await PIXI.Assets.load(maskImgURL);
     const mask = PIXI.Sprite.from(maskTexture);
@@ -89,24 +87,26 @@ export default function Editor(props: {
   };
 
   const canvasHandler = (canvas: HTMLCanvasElement | null) => {
-    if (canvas) {
-      console.debug('initializing app');
-      onMount(canvas).catch((err: unknown) => {
-        console.error(err);
-      });
-    } else {
-      console.debug('destroying app');
-      // console.debug(PIXI.Assets.get('mask'));
-      // console.debug(PIXI.Assets.resolver.hasKey('mask'));
-      // PIXI.Assets.unloadBundle();
-      // PIXI.Assets.unload('mask').catch((error: unknown) => {
-      //   console.error(error);
-      // });
-      // PIXI.Assets.reset();
-      appRef.current?.destroy(true, true);
-      // console.debug(PIXI.Assets);
-      appRef.current = undefined;
-    }
+    (async () => {
+      if (canvas) {
+        console.debug('initializing app');
+        await onMount(canvas);
+      } else {
+        console.debug('destroying app');
+        // console.debug(PIXI.Assets.get('mask'));
+        // console.debug(PIXI.Assets.resolver.hasKey('mask'));
+        // NOTE: After unload, mask URL remains in resolver and can't be overwritten
+        // Small memory leak & could cause a collision if somehow the same mask URL is referenced
+        // Not sure how to fix without reload/Assets.reset()
+        await PIXI.Assets.unload(maskImgURL);
+        // Don't need to unload texture bundle, will be used again if user uploads another image
+        appRef.current?.destroy(true, true);
+        // console.debug(PIXI.Assets.resolver.hasKey('mask'));
+        appRef.current = undefined;
+      }
+    })().catch((err: unknown) => {
+      console.error(err);
+    });
   };
 
   return <canvas id="editor" ref={canvasHandler} />;
