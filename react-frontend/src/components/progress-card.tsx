@@ -19,7 +19,6 @@ export default function ProgressCard(props: {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    // TODO: poll while uploading for progress accuracy?
     // TODO: add delay before updating progress to add visual feedback
     setProgress(25);
     let apiTimeout = setTimeout(pollAPI, 1000);
@@ -67,8 +66,8 @@ export default function ProgressCard(props: {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {/* Cancel button */}
           <Button
+            id="cancel-btn"
             type="button"
             variant="outline"
             size="icon"
