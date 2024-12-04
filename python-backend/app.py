@@ -19,7 +19,7 @@ import db
 import time
 
 # TODO replace with env variable
-ORIGINS = ["http://localhost:5173"]
+ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
 
 def create_lifespan(queue_handler):
     """
