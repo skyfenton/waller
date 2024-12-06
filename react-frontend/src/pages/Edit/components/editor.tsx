@@ -2,24 +2,7 @@
 import * as PIXI from 'pixi.js';
 import { useRef } from 'react';
 import { WallerJob } from '@/types';
-import { isFileWithPreview } from '@/lib/utils';
-
-/**
- * Given a file, returns an image element from the file's preview.
- * Throws an error if the file does not have a preview property.
- * @param src The file to get the image from.
- * @returns An image element.
- * @throws If the file does not have a preview property.
- */
-function getImage(src: File): HTMLImageElement {
-  if (isFileWithPreview(src)) {
-    const img = new Image();
-    img.src = src.preview;
-    return img;
-  } else {
-    throw new Error(`File ${src.name} does not have a preview property`);
-  }
-}
+import { getImage, isFileWithPreview } from '@/utils/isFileWithPreview';
 
 interface EditorProps extends React.HTMLAttributes<HTMLCanvasElement> {
   job: WallerJob;

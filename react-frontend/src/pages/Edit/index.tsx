@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button';
-import { isFileWithPreview } from '@/lib/utils';
+import { isFileWithPreview } from '@/utils/isFileWithPreview';
 import { WallerJob } from '@/types';
 
-import Editor from '@/components/editor/pixi-app';
+import Editor from '@/pages/Edit/components/editor';
 
 // TODO: Come up with better name than Edit/Image Page?
 export default function EditPage(props: {
@@ -14,7 +14,7 @@ export default function EditPage(props: {
       {isFileWithPreview(props.job.image) ? (
         <Editor id="editor" job={props.job} />
       ) : (
-        <h3>Loading picture...</h3>
+        <h3>Loading...</h3>
       )}
       <p>id: {props.job.id}</p>
       <Button

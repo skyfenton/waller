@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Cross2Icon } from '@radix-ui/react-icons';
 
-import { formatBytes, isFileWithPreview } from '@/lib/utils';
+import { isFileWithPreview } from '@/utils/isFileWithPreview';
+import { formatBytes } from '@/utils/formatBytes';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';

@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-import { SingleFileUploader } from '@/components/file-uploader';
+import { SingleFileUploader } from '@/pages/Upload/components/file-uploader';
 import { useRef } from 'react';
 import { WallerJob } from '@/types';
-import ProgressCard from '@/components/progress-card';
-import { isFileWithPreview } from '@/lib/utils';
+import { isFileWithPreview } from '@/utils/isFileWithPreview';
+import ProgressCard from './components/progress-card';
 
 interface UploadData {
   id: string;

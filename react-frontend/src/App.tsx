@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import UploadPage from '@/pages/upload';
-import EditPage from '@/pages/edit';
+import UploadPage from '@/pages/Upload';
+import EditPage from '@/pages/Edit';
 import { WallerJob } from '@/types';
 
 export default function App() {
