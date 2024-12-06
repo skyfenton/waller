@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { SingleFileUploader } from '@/pages/Upload/components/file-uploader';
+import { SingleFileUploader } from '@/pages/upload/components/file-uploader';
 import { useRef } from 'react';
 import { WallerJob } from '@/types';
 import { isFileWithPreview } from '@/utils/isFileWithPreview';

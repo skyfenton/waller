@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { isFileWithPreview } from '@/utils/isFileWithPreview';
 import { WallerJob } from '@/types';
 
-import Editor from '@/pages/Edit/components/editor';
+import Editor from '@/pages/edit/components/editor';
 
 // TODO: Come up with better name than Edit/Image Page?
 export default function EditPage(props: {

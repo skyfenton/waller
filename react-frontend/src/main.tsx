@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import '@/styles/globals.css';
 import { Toaster } from '@/components/ui/sonner';
 
-import App from './App';
+import App from './app';
 
 if (!import.meta.env.VITE_SERVER_URL) {
   throw new Error('VITE_SERVER_URL is not set');
