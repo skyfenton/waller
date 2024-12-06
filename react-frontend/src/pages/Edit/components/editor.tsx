@@ -15,7 +15,7 @@ export default function Editor(props: EditorProps) {
   const maskImgURL =
     (import.meta.env.VITE_SERVER_URL as string) + `/images/${props.job.id}.png`;
 
-  const onMount = async (canvas: HTMLCanvasElement) => {
+  const renderApp = async (canvas: HTMLCanvasElement) => {
     if (!isFileWithPreview(props.job.image)) {
       throw new Error(
         `File ${props.job.image.name} does not have a preview property`
@@ -48,7 +48,7 @@ export default function Editor(props: EditorProps) {
     (async () => {
       if (canvas) {
         console.debug('initializing app');
-        await onMount(canvas);
+        await renderApp(canvas);
       } else {
         console.debug('destroying app');
         // console.debug(PIXI.Assets.get('mask'));
