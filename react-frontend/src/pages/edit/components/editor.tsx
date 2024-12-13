@@ -35,13 +35,26 @@ export default function Editor(props: EditorProps) {
     const maskTexture: PIXI.Texture = await PIXI.Assets.load(maskImgURL);
     const mask = PIXI.Sprite.from(maskTexture);
 
-    // PIXI.Assets.loadBundle('textures', [{ alias: 'wood', src:  }]);
+    const textureBundle = [
+      {
+        alias: 'wood',
+        src: 'https://images.pexels.com/photos/326333/pexels-photo-326333.jpeg'
+      }
+    ];
+
+    PIXI.Assets.addBundle('textures', textureBundle);
+    await PIXI.Assets.loadBundle('textures');
+
+    const woodBg = PIXI.Sprite.from('wood');
+    woodBg.width = srcImg.width;
+    woodBg.height = srcImg.height;
+    woodBg.zIndex = -1;
 
     mask.width = srcImg.width;
     mask.height = srcImg.height;
 
     bg.mask = mask;
-    appRef.current.stage.addChild(bg, mask);
+    appRef.current.stage.addChild(bg, mask, woodBg);
   };
 
   const canvasHandler = (canvas: HTMLCanvasElement | null) => {
