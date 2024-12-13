@@ -6,6 +6,7 @@ segmentation jobs.
 # API framework
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 # Async processing
 import multiprocessing as mp
@@ -18,7 +19,7 @@ import db
 import time
 
 # TODO replace with env variable
-ORIGINS = ["http://localhost:5173"]
+ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
 
 def create_lifespan(queue_handler):
     """
@@ -101,4 +102,5 @@ def create_app(multiprocess='model') -> FastAPI:
         allow_headers=["*"],
     )
     app.include_router(routes.router)
+    app.mount("/images", StaticFiles(directory="data/processed"), name="images")
     return app

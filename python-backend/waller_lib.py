@@ -1,10 +1,10 @@
 from transformers import pipeline
-from PIL import Image
+from PIL import Image, ImageChops
 import random
 
 MODEL = "facebook/mask2former-swin-large-ade-semantic"
 
-WALL_LABELS = set('wall')
+WALL_LABELS = set(['wall'])
 COLOR_MAP = {"wall": (255, 0, 0)}
 COLOR_MAP_VALS = set(COLOR_MAP.values())
 
@@ -46,14 +46,11 @@ class WallerProcess():
               subtask="semantic",
               overlap_mask_area_threshold=0.9
     )
-    all_masks = Image.new("RGBA", resized.size, (0, 0, 0, 0))
-    # wall = Image.new("RGBA", resized.size, (0, 0, 0, 0))
+    all_masks = Image.new("L", resized.size, 0)
     for segment in segments:
-        if segment["label"] in COLOR_MAP:
-            color = COLOR_MAP[segment["label"]]
-        else:
-            color = random_exclusive_color()
-        # print(segment["label"], color)
-        show_mask(all_masks, segment["mask"], color)
-    all_masks.save(output_path)
-      
+      if segment["label"] in WALL_LABELS:
+        all_masks.paste(segment["mask"])
+    
+    out = Image.new("RGB", resized.size, (255, 0, 0, 0))
+    out.putalpha(ImageChops.invert(all_masks))
+    out.save(output_path)
