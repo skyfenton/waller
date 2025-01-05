@@ -6,8 +6,6 @@ variable "aws_config" {
     })
 
     default = {
-        shared_config_files      = []
-        shared_credentials_files = []
         profile                  = "default"
     }
 }
