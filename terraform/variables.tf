@@ -12,10 +12,22 @@ variable "aws_config" {
     }
 }
 
+variable "cloudflare_api_token" {
+    type = string
+}
+
 variable "launch_region" {
     type = string
 }
 
 variable "path_to_lambda_folder" {
+    type = string
+}
+
+variable "api_domain_name" {
+    type = string
+}
+
+variable "domain_cert_arn" {
     type = string
 }

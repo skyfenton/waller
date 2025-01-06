@@ -44,9 +44,9 @@ module "api_gateway" {
   description   = "HTTP API Gateway for Waller"
   protocol_type = "HTTP"
 
-  # domain_name = var.api_domain_name
-  # domain_name_certificate_arn = var.domain_cert_arn
-  create_domain_name = false
+  domain_name = var.api_domain_name
+  domain_name_certificate_arn = var.domain_cert_arn
+  # create_domain_name = false
   create_certificate = false
   create_domain_records = false
 
