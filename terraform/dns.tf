@@ -4,14 +4,14 @@ provider "cloudflare" {
 
 data "cloudflare_zones" "skyfenton_com" {
   filter {
-    name = "skyfenton.com"
+    name = var.api_address.domain
   }
 }
 
 # create a DNS record for the API gateway
 resource "cloudflare_record" "api_gateway_record" {
   zone_id = data.cloudflare_zones.skyfenton_com.zones[0].id
-  name    = "waller-api"
+  name    = var.api_address.subdomain
   content = module.api_gateway.domain_name_target_domain_name
   type    = "CNAME"
   proxied = true

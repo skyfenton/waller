@@ -24,8 +24,11 @@ variable "path_to_lambda_folder" {
     type = string
 }
 
-variable "api_domain_name" {
-    type = string
+variable "api_address" {
+    type = object({
+      domain = string
+      subdomain = string
+    })
 }
 
 variable "domain_cert_arn" {
