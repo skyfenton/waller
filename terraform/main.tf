@@ -105,7 +105,7 @@ module "api_gateway" {
       }
     }
 
-    "POST /upload" = {
+    "POST /jobs" = {
       integration = {
         uri                    = module.upload_lambda.lambda_function_arn
         payload_format_version = "2.0"
