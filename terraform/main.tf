@@ -122,7 +122,6 @@ module "eventbridge" {
   }
 }
 
-
 #############################################
 # API GATEWAY AND ROUTING
 #############################################
@@ -176,13 +175,6 @@ module "api_gateway" {
   create_domain_records       = false
 
   routes = {
-    "POST /test" = {
-      integration = {
-        uri                    = module.test_lambda.lambda_function_arn
-        payload_format_version = "2.0"
-      }
-    }
-
     "POST /jobs" = {
       integration = {
         uri                    = module.upload_lambda.lambda_function_arn
