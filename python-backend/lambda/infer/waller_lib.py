@@ -1,30 +1,14 @@
 from transformers import pipeline
 from PIL import Image, ImageChops
-import random
 
 MODEL = "facebook/mask2former-swin-large-ade-semantic"
 
 WALL_LABELS = set(['wall'])
-COLOR_MAP = {"wall": (255, 0, 0)}
-COLOR_MAP_VALS = set(COLOR_MAP.values())
 
-
-def random_exclusive_color():
-    while True:
-        color = tuple(random.randint(0, 255) for _ in range(3))
-        if color not in COLOR_MAP_VALS:
-            return color
-
-
-def show_mask(img, mask, color):
-    bg = Image.new("RGB", img.size, tuple(color))
-    bg.putalpha(255)
-    # bg.save('bg.png')
-    img.paste(bg, mask=mask)
-    
-    
-def get_shrink_bounds(img, width):
-    # return tuple for size of (width, height/shrink factor)
+def get_shrink_bounds(img: Image.Image, width: int) -> tuple[int, int]:
+    """ Returns a tuple representing the new size fitting given width which
+    preserves aspect ratio (width, height divided by shrink factor between
+    widths) """
     return (width, int(img.size[1] // (img.size[0] / width)))
 
 
@@ -33,11 +17,11 @@ class WallerProcess():
     self.pipe = pipeline(
       task="image-segmentation", 
       model=MODEL,
-      num_workers=1
+      num_workers=1,
+      cache_dir='./hf_cache'
     )
     
-  def process_image(self, image_path, output_path: str):
-    img = Image.open(image_path)
+  def process_image(self, img: Image.Image) -> Image.Image:
     resized = img.resize(
         get_shrink_bounds(img, 1000),
         Image.Resampling.BILINEAR
@@ -53,4 +37,4 @@ class WallerProcess():
     
     out = Image.new("RGB", resized.size, (255, 0, 0, 0))
     out.putalpha(ImageChops.invert(all_masks))
-    out.save(output_path)
+    return out
