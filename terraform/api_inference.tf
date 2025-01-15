@@ -30,6 +30,7 @@ module "public_ecr" {
 
   # repository_lambda_read_access_arns = [module.infer_lambda.lambda_function_arn]
 
+  # TODO: Enable based on configuration variable 
   repository_force_delete = true
 
   create_lifecycle_policy = true
@@ -49,10 +50,6 @@ module "public_ecr" {
       }
     ]
   })
-}
-
-output "public_ecr_repository" {
-  value = module.public_ecr
 }
 
 resource "docker_image" "image" {
@@ -102,32 +99,14 @@ EOT
 #   cache_from = ["${module.public_ecr.repository_url}:latest"]
 # }
 
-# data "aws_ecr_image" "service_image" {
-#   repository_name = module.public_ecr.repository_name
-
-#   most_recent = true
-# depends_on = [null_resource.push_to_ecr]
-# }
-
 # output "aws_ecr_image" {
 #   value = data.aws_ecr_image.service_image
 # }
 
-# module "infer_lambda" {
-#   source  = "terraform-aws-modules/lambda/aws"
-#   version = "~> 7.0"
 
-#   function_name = "waller-inference-lambda"
-#   description   = "Lambda for testing waller API"
 
-#   create_package = false
 
-#   # Container Image
-#   package_type  = "Image"
-#   architectures = ["x86_64"]
 
-#   image_uri = module.aws_ecr_image.service_image.image_uri
-# }
 
 # module "s3_notifications" {
 #   source  = "terraform-aws-modules/s3-bucket/aws//modules/notification"

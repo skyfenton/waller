@@ -16,10 +16,6 @@ variable "cloudflare_api_token" {
   type = string
 }
 
-variable "path_to_lambda_folder" {
-  type = string
-}
-
 variable "api_address" {
   type = object({
     subdomain = string
