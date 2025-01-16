@@ -20,3 +20,6 @@ eval cd "$PROJ_DIR"
 
 # Install localstack for running aws infrastructure locally
 pip install terraform-local
+
+# Install pipreqs for only pinning imported packages
+pip install pipreqs
