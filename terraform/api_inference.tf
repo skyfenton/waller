@@ -10,6 +10,8 @@ provider "docker" {
   }
 }
 
+# TODO: Isolate locals from module
+
 locals {
   source_path   = "${local.lambda_folder_path}/infer/src"
   path_include  = ["**"]
@@ -23,7 +25,7 @@ locals {
 
 module "inference_image" {
   source  = "terraform-aws-modules/lambda/aws//modules/docker-build"
-  version = "7.17.1"
+  version = "~> 7.0"
 
   create_ecr_repo = true
   ecr_repo        = "waller-inference"
@@ -66,7 +68,7 @@ output "inference_image_details" {
 
 module "inference_lambda" {
   source  = "terraform-aws-modules/lambda/aws"
-  version = "7.17.1"
+  version = "~> 7.0"
 
   function_name  = "waller-inference"
   create_package = false
@@ -86,8 +88,6 @@ module "inference_lambda" {
   attach_policy_jsons    = true
   number_of_policy_jsons = 2
   policy_jsons           = [data.aws_iam_policy_document.put_object_policy.json, data.aws_iam_policy_document.get_object_policy.json]
-
-
 }
 
 module "s3_notifications" {
