@@ -1,4 +1,14 @@
-provider "docker" {}
+data "aws_caller_identity" "this" {}
+
+data "aws_ecr_authorization_token" "token" {}
+
+provider "docker" {
+  registry_auth {
+    address  = data.aws_ecr_authorization_token.token.proxy_endpoint
+    username = data.aws_ecr_authorization_token.token.user_name
+    password = data.aws_ecr_authorization_token.token.password
+  }
+}
 
 locals {
   source_path   = "${local.lambda_folder_path}/infer"
@@ -9,32 +19,15 @@ locals {
   files         = sort(setsubtract(local.files_include, local.files_exclude))
 
   dir_sha = sha1(join("", [for f in local.files : filesha1("${local.source_path}/${f}")]))
-
-  public_ecr_address = trimsuffix(module.public_ecr.repository_url, "/${module.public_ecr.repository_name}")
 }
 
-module "public_ecr" {
-  source = "terraform-aws-modules/ecr/aws"
+module "inference_image" {
+  source  = "terraform-aws-modules/lambda/aws//modules/docker-build"
+  version = "7.17.1"
 
-  repository_name = "waller-inference"
-  repository_type = "public"
-
-  public_repository_catalog_data = {
-    description = "Docker container for inferring images through an image segmentation model"
-    # about_text        = file("${path.module}/files/ABOUT.md")
-    # usage_text        = file("${path.module}/files/USAGE.md")
-    operating_systems = ["Linux"]
-    architectures     = ["x86-64"]
-    # logo_image_blob   = filebase64("${path.module}/files/clowd.png")
-  }
-
-  # repository_lambda_read_access_arns = [module.infer_lambda.lambda_function_arn]
-
-  # TODO: Enable based on configuration variable 
-  repository_force_delete = true
-
-  create_lifecycle_policy = true
-  repository_lifecycle_policy = jsonencode({
+  create_ecr_repo = true
+  ecr_repo        = "waller-inference"
+  ecr_repo_lifecycle_policy = jsonencode({
     "rules" : [
       {
         "rulePriority" : 1,
@@ -50,76 +43,63 @@ module "public_ecr" {
       }
     ]
   })
-}
 
-resource "docker_image" "image" {
-  name = "waller-inference-image"
+  use_image_tag = false # If false, sha of the image will be used
+  # image_tag     = "latest"
 
-  build {
-    context = local.source_path
-  }
+  force_remove = true
+
+  source_path = local.source_path
+  platform    = "linux/amd64"
+  # build_args = {
+  #   FOO = "bar"
+  # }
 
   triggers = {
     dir_sha = local.dir_sha
   }
 }
 
-resource "null_resource" "push_to_ecr" {
-  provisioner "local-exec" {
-    command = <<EOT
-aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
-docker tag ${docker_image.image.image_id} ${module.public_ecr.repository_url}:latest
-docker push ${module.public_ecr.repository_url}:latest
-EOT
-  }
+output "inference_image_details" {
+  value = module.inference_image.image_uri
 }
 
-# module "infer_docker_build" {
-#   source = "terraform-aws-modules/lambda/aws//modules/docker-build"
+module "inference_lambda" {
+  source  = "terraform-aws-modules/lambda/aws"
+  version = "7.17.1"
 
-#   create_ecr_repo = false
-#   ecr_address     = local.public_ecr_address
-#   ecr_repo        = module.public_ecr.repository_name
+  function_name  = "waller-inference"
+  create_package = false
 
-#   use_image_tag = true # If false, sha of the image will be used
-#   image_tag     = "0.0.1"
+  package_type  = "Image"
+  architectures = ["x86_64"]
 
-#   force_remove = true
+  image_uri = module.inference_image.image_uri
 
-#   source_path = local.source_path
-#   platform    = "linux/amd64"
-#   # build_args = {
-#   #   FOO = "bar"
-#   # }
+  create_async_event_config    = true
+  maximum_event_age_in_seconds = 120
+  maximum_retry_attempts       = 0
 
-#   triggers = {
-#     dir_sha = local.dir_sha
-#   }
-
-#   cache_from = ["${module.public_ecr.repository_url}:latest"]
-# }
-
-# output "aws_ecr_image" {
-#   value = data.aws_ecr_image.service_image
-# }
+  # attach_tracing_policy = true
+  attach_policy_jsons    = true
+  number_of_policy_jsons = 2
+  policy_jsons           = [data.aws_iam_policy_document.put_object_policy.json, data.aws_iam_policy_document.get_object_policy.json]
 
 
+}
 
+module "s3_notifications" {
+  source  = "terraform-aws-modules/s3-bucket/aws//modules/notification"
+  version = "~> 4.3"
 
+  bucket = module.waller_image_bucket.s3_bucket_id
 
-
-# module "s3_notifications" {
-#   source  = "terraform-aws-modules/s3-bucket/aws//modules/notification"
-#   version = "~> 4.3"
-
-#   bucket = module.waller_image_bucket.s3_bucket_id
-
-#   lambda_notifications = {
-#     infer_lambda = {
-#       function_arn  = module.infer_lambda.lambda_function_arn
-#       function_name = module.infer_lambda.lambda_function_name
-#       events        = ["s3:ObjectCreated:*"]
-#       filter_prefix = "queued/"
-#     }
-#   }
-# }
+  lambda_notifications = {
+    inference_lambda = {
+      function_arn  = module.inference_lambda.lambda_function_arn
+      function_name = module.inference_lambda.lambda_function_name
+      events        = ["s3:ObjectCreated:*"]
+      filter_prefix = "queued/"
+    }
+  }
+}

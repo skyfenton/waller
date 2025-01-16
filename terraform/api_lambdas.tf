@@ -1,15 +1,3 @@
-data "aws_iam_policy_document" "put_object_policy" {
-  statement {
-    effect = "Allow"
-    actions = [
-      "s3:PutObject"
-    ]
-    resources = [
-      "arn:aws:s3:::waller-images/*"
-    ]
-  }
-}
-
 module "upload_lambda" {
   source  = "terraform-aws-modules/lambda/aws"
   version = "~> 7.0"
