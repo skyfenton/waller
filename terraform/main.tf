@@ -12,5 +12,5 @@ provider "aws" {
 }
 
 locals {
-  lambda_folder_path = abspath("${path.root}/../python-backend/lambda")
+  lambda_folder_path = abspath("${path.root}/../python-backend/functions")
 }

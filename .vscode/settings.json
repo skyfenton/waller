@@ -3,5 +3,10 @@
   "css.lint.unknownAtRules": "ignore",
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff"
-  }
+  },
+  "python.testing.pytestArgs": [
+    "python-backend"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
 }

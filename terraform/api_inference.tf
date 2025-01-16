@@ -11,7 +11,7 @@ provider "docker" {
 }
 
 locals {
-  source_path   = "${local.lambda_folder_path}/infer"
+  source_path   = "${local.lambda_folder_path}/infer/src"
   path_include  = ["**"]
   path_exclude  = ["**/__pycache__/**"]
   files_include = setunion([for f in local.path_include : fileset(local.source_path, f)]...)
@@ -73,8 +73,10 @@ module "inference_lambda" {
 
   package_type  = "Image"
   architectures = ["x86_64"]
+  image_uri     = module.inference_image.image_uri
 
-  image_uri = module.inference_image.image_uri
+  memory_size = 512
+  timeout     = 15
 
   create_async_event_config    = true
   maximum_event_age_in_seconds = 120
