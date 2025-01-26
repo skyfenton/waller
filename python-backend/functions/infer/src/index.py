@@ -15,36 +15,29 @@ def lambda_handler(event, context):
         if record["eventVersion"].split(".")[0] != MAJOR_EVENT_VERSION:
             raise Exception(f"Unsupported event version: {record['eventVersion']}")
 
+        bucket = record["s3"]["bucket"]["name"]
         key = record["s3"]["object"]["key"]
         id = key.split("/")[-1]
 
         # TODO: update dynamo db status to processing
 
-        bucket = record["s3"]["bucket"]["name"]
+        print("Loading image... (bucket: %s, key: %s)" % (bucket, key))
 
-        print("Loading image from s3... (bucket: %s, key: %s)" % (bucket, key))
         # Load image from s3
         image_bytes = s3.get_object(Bucket=bucket, Key=key)["Body"].read()
-        print(str(image_bytes[:128]) + f"... ({len(image_bytes)})")
-
         image = Image.open(BytesIO(image_bytes))
 
-        # # run image segmentation model
+        # Process the image
         # out = model.process_image(image)
-
-        print("Processing image...")
-
         out = ImageOps.grayscale(image)
 
         # Save the image to a bytes buffer
-        print("Saving image to buffer...")
-
         buffer = BytesIO()
         out.save(buffer, format="PNG")
         buffer.seek(0)
 
         print(
-            "Uploading image to s3... (bucket: %s, key: %s)"
+            "Uploading processed image... (bucket: %s, key: %s)"
             % (bucket, f"processed/{id}")
         )
 
