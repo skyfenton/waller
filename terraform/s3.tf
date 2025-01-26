@@ -37,7 +37,7 @@ module "expire_objects_lambda" {
   version = "~> 7.0"
 
   function_name = "expire-waller-images"
-  description   = "Lambda for cron job to expire waller images"
+  description   = "Handles expiring old files in waller bucket via cron job"
   handler       = "index.lambda_handler"
   runtime       = "python3.12"
   publish       = true

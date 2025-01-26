@@ -3,7 +3,7 @@ module "upload_lambda" {
   version = "~> 7.0"
 
   function_name = "waller-upload"
-  description   = "Lambda for uploading images for waller"
+  description   = "Handles image uploads for waller"
   handler       = "index.lambda_handler"
   runtime       = "python3.12"
   publish       = true

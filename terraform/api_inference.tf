@@ -71,6 +71,7 @@ module "inference_lambda" {
   version = "~> 7.0"
 
   function_name  = "waller-inference"
+  description    = "Runs inference on images in waller bucket"
   create_package = false
 
   package_type  = "Image"
