@@ -15,7 +15,7 @@ def reset():
 
 
 @mock_aws
-def test_get_object():
+def test_inference_integration():
     conn = boto3.resource("s3", region_name="us-east-1")
     # We need to create the bucket since this is all in Moto's 'virtual' AWS account
     conn.create_bucket(Bucket="waller-inference")
