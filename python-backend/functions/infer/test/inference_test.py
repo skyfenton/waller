@@ -8,6 +8,12 @@ INPUT_PATH = Path(__file__).parent / "tmp" / "test.jpg"
 OUTPUT_PATH = Path(__file__).parent / "tmp" / "output.png"
 
 
+@pytest.fixture(autouse=True)
+def reset():
+    OUTPUT_PATH.unlink(missing_ok=True)
+    yield
+
+
 @mock_aws
 def test_get_object():
     conn = boto3.resource("s3", region_name="us-east-1")
