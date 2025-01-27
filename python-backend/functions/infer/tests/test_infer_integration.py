@@ -4,6 +4,7 @@ import boto3
 import os
 from moto import mock_aws
 
+# TODO: Fix import to show progress of loading model
 os.environ["MODEL_PATH"] = "facebook/mask2former-swin-large-ade-semantic"
 from functions.infer.src.index import lambda_handler
 
