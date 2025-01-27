@@ -1,11 +1,11 @@
 from io import BytesIO
 import boto3
-from PIL import Image, ImageOps
-# from waller_lib import WallerProcess
+from PIL import Image
+from .waller_lib import WallerProcess
 
 MAJOR_EVENT_VERSION = "2"
 
-# model = WallerProcess()
+model = WallerProcess()
 s3 = boto3.client("s3")
 
 
@@ -28,8 +28,7 @@ def lambda_handler(event, context):
         image = Image.open(BytesIO(image_bytes))
 
         # Process the image
-        # out = model.process_image(image)
-        out = ImageOps.grayscale(image)
+        out = model.process_image(image)
 
         # Save the image to a bytes buffer
         buffer = BytesIO()
