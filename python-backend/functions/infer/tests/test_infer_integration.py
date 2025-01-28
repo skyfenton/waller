@@ -5,8 +5,8 @@ import os
 from moto import mock_aws
 
 # TODO: Fix import to show progress of loading model
-os.environ["MODEL_PATH"] = "facebook/mask2former-swin-large-ade-semantic"
-from functions.infer.src.index import lambda_handler
+os.environ["MODEL_PATH"] = "facebook/mask2former-swin-small-ade-semantic"
+from src.index import lambda_handler
 
 INPUT_PATH = Path(__file__).parent / "tmp" / "test.jpg"
 OUTPUT_PATH = Path(__file__).parent / "tmp" / "output.png"

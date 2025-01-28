@@ -1,7 +1,7 @@
 from io import BytesIO
 import boto3
 from PIL import Image
-from .waller_lib import WallerProcess
+from src.waller.waller_lib import WallerProcess
 
 MAJOR_EVENT_VERSION = "2"
 

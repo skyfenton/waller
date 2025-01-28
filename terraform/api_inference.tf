@@ -13,9 +13,9 @@ provider "docker" {
 # TODO: Isolate locals from module
 
 locals {
-  source_path   = "${local.lambda_folder_path}/infer/src"
+  source_path   = "${local.lambda_folder_path}/infer"
   path_include  = ["**"]
-  path_exclude  = ["**/__pycache__/**"]
+  path_exclude  = ["**/__pycache__/**", "**/tests/**"]
   files_include = setunion([for f in local.path_include : fileset(local.source_path, f)]...)
   files_exclude = setunion([for f in local.path_exclude : fileset(local.source_path, f)]...)
   files         = sort(setsubtract(local.files_include, local.files_exclude))
@@ -78,8 +78,8 @@ module "inference_lambda" {
   architectures = ["x86_64"]
   image_uri     = module.inference_image.image_uri
 
-  memory_size = 512
-  timeout     = 15
+  memory_size = 1770
+  timeout     = 90
 
   create_async_event_config    = true
   maximum_event_age_in_seconds = 120

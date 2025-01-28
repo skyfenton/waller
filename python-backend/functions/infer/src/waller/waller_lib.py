@@ -17,7 +17,12 @@ class WallerProcess:
     def __init__(self) -> None:
         if MODEL is None:
             raise ValueError("MODEL_PATH environment variable not set")
-        self.segmenter = pipeline(task="image-segmentation", model=MODEL, num_workers=1)
+        self.segmenter = pipeline(
+            task="image-segmentation",
+            model=MODEL,
+            num_workers=1,
+            use_fast=True,
+        )
 
     def process_image(self, img: Image.Image) -> Image.Image:
         resized = img.resize(get_shrink_bounds(img, 1000), Image.Resampling.BILINEAR)
