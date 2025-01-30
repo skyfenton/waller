@@ -1,7 +1,7 @@
 
 # Download model
 FROM public.ecr.aws/lambda/python:3.12 AS model-dl
-ARG MODEL_ID=facebook/mask2former-swin-large-ade-semantic
+ARG MODEL_ID=facebook/mask2former-swin-small-ade-semantic
 RUN pip install huggingface_hub
 RUN huggingface-cli download ${MODEL_ID} --exclude model.safetensors --local-dir /tmp/model
 
