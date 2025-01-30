@@ -53,7 +53,7 @@ def lambda_handler(event, context):
     except (InvalidUploadException, binascii.Error, KeyError) as e:
         return {
             "statusCode": 400,
-            "body": json.dumps({"error": e.__class__.__name__, "detail": str(e)}),
+            "body": json.dumps({"error": type(e).__name__, "detail": str(e)}),
         }
 
     return {
