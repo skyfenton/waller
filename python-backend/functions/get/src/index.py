@@ -6,13 +6,10 @@ s3 = boto3.client("s3")
 
 def lambda_handler(event, context):
     id = event["pathParameters"]["id"]
-    try:
-        response = s3.get_object(Bucket="waller-images", Key=f"processed/{id}")
-    except s3.exceptions.ClientError:
-        return {
-            "statusCode": 404,
-            "body": {"error": "NoSuchKey", "detail": "Image not found"},
-        }
+
+    # TODO: query DynamoDB first to get status (cheaper than asking S3)
+
+    response = s3.get_object(Bucket="waller-images", Key=f"processed/{id}")
 
     image_bytes = response["Body"].read()
 
