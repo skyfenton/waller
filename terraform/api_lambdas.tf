@@ -3,7 +3,7 @@ module "upload_lambda" {
   version = "~> 7.0"
 
   function_name = "waller-upload"
-  description   = "Handles image uploads for waller"
+  description   = "Upload image for a new Waller job"
   handler       = "index.lambda_handler"
   runtime       = "python3.12"
   publish       = true
@@ -25,8 +25,8 @@ module "get_item_lambda" {
   source  = "terraform-aws-modules/lambda/aws"
   version = "~> 7.0"
 
-  function_name = "waller-get-item"
-  description   = "Get processed images for waller"
+  function_name = "waller-get"
+  description   = "Get job status for Waller"
   handler       = "index.lambda_handler"
   runtime       = "python3.12"
   publish       = true
