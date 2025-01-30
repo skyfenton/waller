@@ -18,6 +18,12 @@ module "api_gateway" {
         payload_format_version = "2.0"
       }
     }
+    "GET /jobs/{id}" = {
+      integration = {
+        uri                    = module.get_item_lambda.lambda_function_arn
+        payload_format_version = "2.0"
+      }
+    }
   }
 }
 
