@@ -31,7 +31,7 @@ module "get_item_lambda" {
   runtime       = "python3.12"
   publish       = true
 
-  source_path = "${local.lambda_folder_path}/get_item/src"
+  source_path = "${local.lambda_folder_path}/get/src"
 
   allowed_triggers = {
     AllowExecutionFromAPIGateway = {
