@@ -14,3 +14,22 @@ provider "aws" {
 locals {
   lambda_folder_path = abspath("${path.root}/../python-backend/functions")
 }
+
+module "dynamodb_table" {
+  source  = "terraform-aws-modules/dynamodb-table/aws"
+  version = "~> 4.0"
+
+  name = "waller"
+
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 5
+  write_capacity = 3
+
+  hash_key = "id"
+  attributes = [
+    {
+      name = "id"
+      type = "N"
+    }
+  ]
+}
