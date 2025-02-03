@@ -1,3 +1,4 @@
+from time import sleep
 import uuid
 import json
 import base64
@@ -15,6 +16,7 @@ class InvalidUploadException(Exception):
     pass
 
 
+# SYNCHRONOUS lambda handler
 def lambda_handler(event, context):
     try:
         # TODO: Make error handling missing content-type header more descriptive
@@ -43,12 +45,7 @@ def lambda_handler(event, context):
         )
 
         # Add a new item to the table
-        # dynamodb.Table('jobs').put_item(
-        #     Item={
-        #         'id': id,
-        #         'status': 'queued'
-        #     }
-        # )
+        dynamodb.Table("waller").put_item(Item={"id": str(id), "status": "queued"})
 
     except (InvalidUploadException, binascii.Error, KeyError) as e:
         return {

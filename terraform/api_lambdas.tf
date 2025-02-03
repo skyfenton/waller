@@ -17,8 +17,9 @@ module "upload_lambda" {
     }
   }
 
-  attach_policy_json = true
-  policy_json        = data.aws_iam_policy_document.put_object_policy.json
+  attach_policy_jsons    = true
+  number_of_policy_jsons = 2
+  policy_jsons           = [data.aws_iam_policy_document.put_object_policy.json, data.aws_iam_policy_document.db_put_policy.json]
 }
 
 module "get_item_lambda" {
