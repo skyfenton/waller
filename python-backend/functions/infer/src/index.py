@@ -7,6 +7,7 @@ MAJOR_EVENT_VERSION = "2"
 
 model = WallerProcess()
 s3 = boto3.client("s3")
+dynamodb = boto3.resource("dynamodb")
 
 
 def lambda_handler(event, context):
@@ -19,13 +20,18 @@ def lambda_handler(event, context):
         key = record["s3"]["object"]["key"]
         id = key.split("/")[-1]
 
-        # TODO: update dynamo db status to processing
-
         print("Loading image... (bucket: %s, key: %s)" % (bucket, key))
 
         # Load image from s3
         image_bytes = s3.get_object(Bucket=bucket, Key=key)["Body"].read()
         image = Image.open(BytesIO(image_bytes))
+
+        # Update the status in the database before processing
+        dynamodb.Table("waller").update_item(
+            Key={"id": id},
+            UpdateExpression="SET stage = :stage",
+            ExpressionAttributeValues={":stage": "processing"},
+        )
 
         # Process the image
         out = model.process_image(image)
@@ -43,4 +49,10 @@ def lambda_handler(event, context):
         # upload output to s3 bucket
         s3.put_object(
             Bucket=bucket, Key=f"processed/{id}", Body=buffer, ContentType="image/png"
+        )
+
+        dynamodb.Table("waller").update_item(
+            Key={"id": id},
+            UpdateExpression="SET stage = :stage",
+            ExpressionAttributeValues={":stage": "done"},
         )

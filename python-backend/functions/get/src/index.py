@@ -18,7 +18,7 @@ def lambda_handler(event, context):
             "body": json.dumps({"error": "Image not found"}),
         }
 
-    if response["Item"]["status"] == "done":
+    if response["Item"]["stage"] == "done":
         response = s3.get_object(Bucket="waller-images", Key=f"processed/{id}")
         image_bytes = response["Body"].read()
         return {
@@ -30,5 +30,5 @@ def lambda_handler(event, context):
 
     return {
         "statusCode": 200,
-        "body": json.dumps({"status": response["Item"]["status"]}),
+        "body": json.dumps({"status": response["Item"]["stage"]}),
     }
