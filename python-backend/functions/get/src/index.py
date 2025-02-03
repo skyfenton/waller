@@ -1,21 +1,34 @@
 import base64
 import boto3
+import json
 
 s3 = boto3.client("s3")
+dynamodb = boto3.resource("dynamodb")
 
 
 def lambda_handler(event, context):
     id = event["pathParameters"]["id"]
 
-    # TODO: query DynamoDB first to get status (cheaper than asking S3)
+    table = dynamodb.Table("waller")
+    response = table.get_item(Key={"id": id})
 
-    response = s3.get_object(Bucket="waller-images", Key=f"processed/{id}")
+    if "Item" not in response:
+        return {
+            "statusCode": 404,
+            "body": json.dumps({"error": "Image not found"}),
+        }
 
-    image_bytes = response["Body"].read()
+    if response["Item"]["status"] == "done":
+        response = s3.get_object(Bucket="waller-images", Key=f"processed/{id}")
+        image_bytes = response["Body"].read()
+        return {
+            "statusCode": 200,
+            "headers": {"Content-Type": "image/png"},
+            "body": base64.b64encode(image_bytes).decode("utf-8"),
+            "isBase64Encoded": True,
+        }
 
     return {
         "statusCode": 200,
-        "headers": {"Content-Type": "image/png"},
-        "body": base64.b64encode(image_bytes).decode("utf-8"),
-        "isBase64Encoded": True,
+        "body": json.dumps({"status": response["Item"]["status"]}),
     }
