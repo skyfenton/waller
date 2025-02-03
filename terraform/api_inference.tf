@@ -87,8 +87,8 @@ module "inference_lambda" {
 
   # attach_tracing_policy = true
   attach_policy_jsons    = true
-  number_of_policy_jsons = 2
-  policy_jsons           = [data.aws_iam_policy_document.put_object_policy.json, data.aws_iam_policy_document.get_object_policy.json]
+  number_of_policy_jsons = 3
+  policy_jsons           = [data.aws_iam_policy_document.put_object_policy.json, data.aws_iam_policy_document.get_object_policy.json, data.aws_iam_policy_document.db_write_policy.json]
 }
 
 module "s3_notifications" {

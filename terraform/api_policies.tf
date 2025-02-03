@@ -22,11 +22,12 @@ data "aws_iam_policy_document" "get_object_policy" {
   }
 }
 
-data "aws_iam_policy_document" "db_put_policy" {
+data "aws_iam_policy_document" "db_write_policy" {
   statement {
     effect = "Allow"
     actions = [
-      "dynamodb:PutItem"
+      "dynamodb:PutItem",
+      "dynamodb:UpdateItem"
     ]
     resources = [
       "arn:aws:dynamodb:*:*:table/waller"
