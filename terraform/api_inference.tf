@@ -78,7 +78,7 @@ module "inference_lambda" {
   architectures = ["x86_64"]
   image_uri     = module.inference_image.image_uri
 
-  memory_size = 1770
+  memory_size = 2048
   timeout     = 90
 
   create_async_event_config    = true
