@@ -42,7 +42,7 @@ module "expire_objects_lambda" {
   runtime       = "python3.12"
   publish       = true
 
-  source_path = "${local.lambda_folder_path}/expire_items"
+  source_path = "${local.lambda_folder_path}/delete/expire"
 
   trusted_entities = ["scheduler.amazonaws.com"]
 
