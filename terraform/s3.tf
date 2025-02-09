@@ -11,26 +11,6 @@ module "waller_image_bucket" {
   # lambda_function = 
 }
 
-data "aws_iam_policy_document" "expire_objects_policy" {
-  statement {
-    effect = "Allow"
-    actions = [
-      "s3:ListBucket",
-    ]
-    resources = [
-      "arn:aws:s3:::waller-images"
-    ]
-  }
-  statement {
-    effect = "Allow"
-    actions = [
-      "s3:DeleteObject"
-    ]
-    resources = [
-      "arn:aws:s3:::waller-images/*"
-    ]
-  }
-}
 
 module "expire_objects_lambda" {
   source  = "terraform-aws-modules/lambda/aws"
@@ -53,8 +33,14 @@ module "expire_objects_lambda" {
     }
   }
 
-  attach_policy_json = true
-  policy_json        = data.aws_iam_policy_document.expire_objects_policy.json
+  attach_policy_jsons    = true
+  number_of_policy_jsons = 4
+  policy_jsons = [
+    data.aws_iam_policy_document.get_object_policy.json,
+    data.aws_iam_policy_document.del_object_policy.json,
+    data.aws_iam_policy_document.db_get_policy.json,
+    data.aws_iam_policy_document.db_write_policy.json
+  ]
 }
 
 module "eventbridge" {

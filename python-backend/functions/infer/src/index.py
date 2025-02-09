@@ -1,3 +1,4 @@
+from datetime import datetime
 from io import BytesIO
 import boto3
 from PIL import Image
@@ -53,6 +54,11 @@ def lambda_handler(event, context):
 
         dynamodb.Table("waller").update_item(
             Key={"id": id},
-            UpdateExpression="SET stage = :stage",
-            ExpressionAttributeValues={":stage": "done"},
+            UpdateExpression="SET stage = :stage, modified_at = :timestamp",
+            ExpressionAttributeValues={
+                ":stage": "done",
+                ":timestamp": int(datetime.now().timestamp()),
+            },
         )
+
+        s3.delete_object(Bucket=bucket, Key=key)

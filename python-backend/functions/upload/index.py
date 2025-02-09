@@ -1,4 +1,4 @@
-from time import sleep
+from datetime import datetime
 import uuid
 import json
 import base64
@@ -45,7 +45,13 @@ def lambda_handler(event, context):
         )
 
         # Add a new item to the table
-        dynamodb.Table("waller").put_item(Item={"id": str(id), "stage": "queued"})
+        dynamodb.Table("waller").put_item(
+            Item={
+                "id": str(id),
+                "stage": "queued",
+                "modified_at": int(datetime.now().timestamp()),
+            }
+        )
 
     except (InvalidUploadException, binascii.Error, KeyError) as e:
         return {
