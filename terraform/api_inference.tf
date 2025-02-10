@@ -62,10 +62,6 @@ module "inference_image" {
   }
 }
 
-output "inference_image_details" {
-  value = module.inference_image.image_uri
-}
-
 module "inference_lambda" {
   source  = "terraform-aws-modules/lambda/aws"
   version = "~> 7.0"
