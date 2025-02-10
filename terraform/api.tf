@@ -27,22 +27,22 @@ module "api_gateway" {
   }
 }
 
-module "test_lambda" {
-  source  = "terraform-aws-modules/lambda/aws"
-  version = "~> 7.0"
+# module "test_lambda" {
+#     source  = "terraform-aws-modules/lambda/aws"
+#     version = "~> 7.0"
 
-  function_name = "waller-test"
-  description   = "Lambda for testing waller API"
-  handler       = "index.lambda_handler"
-  runtime       = "python3.12"
-  publish       = true
+#     function_name = "waller-test"
+#     description   = "Lambda for testing waller API"
+#     handler       = "index.lambda_handler"
+#     runtime       = "python3.12"
+#     publish       = true
 
-  source_path = "${local.lambda_folder_path}/test"
+#     source_path = "${local.lambda_folder_path}/test"
 
-  allowed_triggers = {
-    AllowExecutionFromAPIGateway = {
-      service    = "apigateway"
-      source_arn = "${module.api_gateway.api_execution_arn}/*/*"
-    }
-  }
-}
+#     allowed_triggers = {
+#         AllowExecutionFromAPIGateway = {
+#             service    = "apigateway"
+#             source_arn = "${module.api_gateway.api_execution_arn}/*/*"
+    #     }
+#   }
+# }
