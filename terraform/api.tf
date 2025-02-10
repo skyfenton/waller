@@ -11,6 +11,12 @@ module "api_gateway" {
   create_certificate          = false
   create_domain_records       = false
 
+  cors_configuration = {
+    allow_headers = ["*"]
+    allow_methods = ["*"]
+    allow_origins = ["*"]
+  }
+
   routes = {
     "POST /jobs" = {
       integration = {
@@ -28,21 +34,21 @@ module "api_gateway" {
 }
 
 # module "test_lambda" {
-#     source  = "terraform-aws-modules/lambda/aws"
-#     version = "~> 7.0"
+#   source  = "terraform-aws-modules/lambda/aws"
+#   version = "~> 7.0"
 
-#     function_name = "waller-test"
-#     description   = "Lambda for testing waller API"
-#     handler       = "index.lambda_handler"
-#     runtime       = "python3.12"
-#     publish       = true
+#   function_name = "waller-test"
+#   description   = "Lambda for testing waller API"
+#   handler       = "index.lambda_handler"
+#   runtime       = "python3.12"
+#   publish       = true
 
-#     source_path = "${local.lambda_folder_path}/test"
+#   source_path = "${local.lambda_folder_path}/test"
 
-#     allowed_triggers = {
-#         AllowExecutionFromAPIGateway = {
-#             service    = "apigateway"
-#             source_arn = "${module.api_gateway.api_execution_arn}/*/*"
-    #     }
+#   allowed_triggers = {
+#     AllowExecutionFromAPIGateway = {
+#       service    = "apigateway"
+#       source_arn = "${module.api_gateway.api_execution_arn}/*/*"
+#     }
 #   }
 # }
