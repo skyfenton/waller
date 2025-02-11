@@ -23,6 +23,12 @@ export default function UploadPage(props: {
   const abortControllerRef = useRef<AbortController>(new AbortController());
 
   async function uploadImage(file: File) {
+    Object.assign(file, {
+      preview: URL.createObjectURL(file)
+    });
+
+    props.setJob({ id: undefined, image: file, processed: false });
+
     const res = await axios.post<UploadData>(
       (import.meta.env.VITE_SERVER_URL as string) + '/jobs',
       {
@@ -30,29 +36,29 @@ export default function UploadPage(props: {
       },
       {
         headers: {
-          'Content-Type': 'image/jpeg'
+          'Content-Type': file.type
         },
         signal: abortControllerRef.current.signal
       }
     );
 
-    Object.assign(file, {
-      preview: URL.createObjectURL(file)
-    });
-
     props.setJob({ id: res.data.id, image: file, processed: false });
   }
 
-  async function pollJob(): Promise<number> {
+  async function getJobProgress(): Promise<number> {
     if (props.job) {
+      console.debug('polling id:', props.job.id);
+
+      // No id in system (still uploading)
+      if (!props.job.id) return 25;
+
+      // Has id in system (poll for status)
       return await axios
         .get<JobData>(
           (import.meta.env.VITE_SERVER_URL as string) + `/jobs/${props.job.id}`
         )
         .then((res) => {
           switch (res.data.status) {
-            case 'uploading':
-              return 25;
             case 'queued':
               return 50;
             case 'processing':
@@ -61,7 +67,7 @@ export default function UploadPage(props: {
               props.setJob({ ...props.job, processed: true } as WallerJob);
               return 100;
             default:
-              return 0;
+              throw new Error('Unknown job status: ' + res.data.status);
           }
         });
     }
@@ -71,7 +77,7 @@ export default function UploadPage(props: {
   async function cancelJob() {
     abortControllerRef.current.abort();
     abortControllerRef.current = new AbortController();
-    if (props.job) {
+    if (props.job?.id) {
       await axios.delete(
         (import.meta.env.VITE_SERVER_URL as string) + `/jobs/${props.job.id}`,
         {
@@ -92,8 +98,8 @@ export default function UploadPage(props: {
       {props.job ? (
         <div className="mx-auto w-full max-w-2xl">
           <ProgressCard
-            file={props.job.image}
-            onPoll={pollJob}
+            image={props.job.image}
+            onPoll={getJobProgress}
             onCancel={cancelJob}
           />
         </div>

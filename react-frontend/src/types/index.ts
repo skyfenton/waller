@@ -1,5 +1,5 @@
 export interface WallerJob {
-  id: string;
+  id?: string;
   image: File;
   processed: boolean;
 }
