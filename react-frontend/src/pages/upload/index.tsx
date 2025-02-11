@@ -26,14 +26,13 @@ export default function UploadPage(props: {
     Object.assign(file, {
       preview: URL.createObjectURL(file)
     });
+    console.log(file);
 
     props.setJob({ id: undefined, image: file, processed: false });
 
     const res = await axios.post<UploadData>(
       (import.meta.env.VITE_SERVER_URL as string) + '/jobs',
-      {
-        file: file
-      },
+      await file.arrayBuffer(),
       {
         headers: {
           'Content-Type': file.type
