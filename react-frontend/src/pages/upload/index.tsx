@@ -23,12 +23,15 @@ export default function UploadPage(props: {
   const abortControllerRef = useRef<AbortController>(new AbortController());
 
   async function uploadImage(file: File) {
-    const res = await axios.postForm<UploadData>(
+    const res = await axios.post<UploadData>(
       (import.meta.env.VITE_SERVER_URL as string) + '/jobs',
       {
         file: file
       },
       {
+        headers: {
+          'Content-Type': 'image/jpeg'
+        },
         signal: abortControllerRef.current.signal
       }
     );
