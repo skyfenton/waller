@@ -1,3 +1,7 @@
+locals {
+  fqdn = "${var.api_address.subdomain}.${var.api_address.domain}"
+}
+
 module "api_gateway" {
   source  = "terraform-aws-modules/apigateway-v2/aws"
   version = "~> 5.0"
@@ -6,7 +10,7 @@ module "api_gateway" {
   description   = "HTTP API Gateway for Waller"
   protocol_type = "HTTP"
 
-  domain_name                 = "${var.api_address.subdomain}.${var.api_address.domain}"
+  domain_name                 = local.fqdn
   domain_name_certificate_arn = var.domain_cert_arn
   create_certificate          = false
   create_domain_records       = false
