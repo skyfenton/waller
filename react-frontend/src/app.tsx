@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import UploadPage from '@/pages/upload';
 import EditPage from '@/pages/edit';
-import { isJobDone, UploadedWallerJob, WallerJob } from '@/types';
+import { isJobDone, WallerJob } from '@/types';
 
 export default function App() {
   const [job, setJob] = useState<WallerJob>();

@@ -1,12 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { isFileWithPreview } from '@/utils/isFileWithPreview';
-import { UploadedWallerJob, WallerJob } from '@/types';
+import { CompletedWallerJob, WallerJob } from '@/types';
 
 import Editor from '@/pages/edit/components/editor';
 
 // TODO: Come up with better name than Edit/Image Page?
 export default function EditPage(props: {
-  job: UploadedWallerJob;
+  job: CompletedWallerJob;
   setJob: (job?: WallerJob) => void;
 }) {
   return (

@@ -1,19 +1,17 @@
 // import { Stage, Container, Sprite } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import { useRef } from 'react';
-import { UploadedWallerJob } from '@/types';
+import { CompletedWallerJob } from '@/types';
 import { getImage } from '@/utils/isFileWithPreview';
 
 interface EditorProps extends React.HTMLAttributes<HTMLCanvasElement> {
-  job: UploadedWallerJob;
+  job: CompletedWallerJob;
 }
 
 export default function Editor(props: EditorProps) {
   const appRef = useRef<PIXI.Application>();
 
   const srcImg = getImage(props.job.src);
-  const maskImgURL =
-    (import.meta.env.VITE_SERVER_URL as string) + `/images/${props.job.id}.png`;
 
   const renderApp = async (canvas: HTMLCanvasElement) => {
     appRef.current = new PIXI.Application();
@@ -27,7 +25,7 @@ export default function Editor(props: EditorProps) {
     // TODO: cleanup warning about not using CanvasSource
     const bg = PIXI.Sprite.from(srcImg);
 
-    const maskTexture: PIXI.Texture = await PIXI.Assets.load(maskImgURL);
+    const maskTexture: PIXI.Texture = await PIXI.Assets.load(props.job.maskURL);
     const mask = PIXI.Sprite.from(maskTexture);
 
     const textureBundle = [
@@ -64,7 +62,7 @@ export default function Editor(props: EditorProps) {
         // NOTE: After unload, mask URL remains in resolver and can't be overwritten
         // Small memory leak & could cause a collision if somehow the same mask URL is referenced
         // Not sure how to fix without reload/Assets.reset()
-        await PIXI.Assets.unload(maskImgURL);
+        await PIXI.Assets.unload(props.job.maskURL);
         // Don't need to unload texture bundle, will be used again if user uploads another image
         appRef.current?.destroy(true, true);
         // console.debug(PIXI.Assets.resolver.hasKey('mask'));

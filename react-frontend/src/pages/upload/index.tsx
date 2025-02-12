@@ -2,7 +2,7 @@ import axios from 'axios';
 
 import { SingleFileUploader } from '@/pages/upload/components/file-uploader';
 import { useRef } from 'react';
-import { UploadedWallerJob, WallerJob, isJobUploading } from '@/types';
+import { CompletedWallerJob, WallerJob, isJobUploading } from '@/types';
 import { isFileWithPreview } from '@/utils/isFileWithPreview';
 import ProgressCard from './components/progress-card';
 
@@ -12,6 +12,11 @@ interface UploadData {
 
 interface JobData {
   status: string;
+}
+
+interface CompletedJobData extends JobData {
+  status: 'done';
+  maskURL: string;
 }
 
 export default function UploadPage(props: {
@@ -62,12 +67,15 @@ export default function UploadPage(props: {
               return 50;
             case 'processing':
               return 75;
-            case 'done':
+            case 'done': {
               props.setJob({
                 ...props.job,
-                status: 'done'
-              } as UploadedWallerJob);
+                status: 'done',
+                maskURL: (res.data as CompletedJobData).maskURL
+              } as CompletedWallerJob);
               return 100;
+            }
+            // Get file from presigned URL
             default:
               throw new Error('Unknown job status: ' + res.data.status);
           }
