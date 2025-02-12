@@ -1,26 +1,21 @@
 // import { Stage, Container, Sprite } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import { useRef } from 'react';
-import { WallerJob } from '@/types';
-import { getImage, isFileWithPreview } from '@/utils/isFileWithPreview';
+import { UploadedWallerJob } from '@/types';
+import { getImage } from '@/utils/isFileWithPreview';
 
 interface EditorProps extends React.HTMLAttributes<HTMLCanvasElement> {
-  job: WallerJob;
+  job: UploadedWallerJob;
 }
 
 export default function Editor(props: EditorProps) {
   const appRef = useRef<PIXI.Application>();
 
-  const srcImg = getImage(props.job.image);
+  const srcImg = getImage(props.job.src);
   const maskImgURL =
     (import.meta.env.VITE_SERVER_URL as string) + `/images/${props.job.id}.png`;
 
   const renderApp = async (canvas: HTMLCanvasElement) => {
-    if (!isFileWithPreview(props.job.image)) {
-      throw new Error(
-        `File ${props.job.image.name} does not have a preview property`
-      );
-    }
     appRef.current = new PIXI.Application();
     await appRef.current.init({
       // application options
