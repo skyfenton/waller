@@ -1,9 +1,10 @@
-import base64
 import boto3
 import json
 
 s3 = boto3.client("s3")
 dynamodb = boto3.resource("dynamodb")
+
+EXPIRE_IN_MINUTES = 30
 
 
 def lambda_handler(event, context):
@@ -19,14 +20,12 @@ def lambda_handler(event, context):
         }
 
     if response["Item"]["stage"] == "done":
-        response = s3.get_object(Bucket="waller-images", Key=f"processed/{id}")
-        image_bytes = response["Body"].read()
-        return {
-            "statusCode": 200,
-            "headers": {"Content-Type": "image/png"},
-            "body": base64.b64encode(image_bytes).decode("utf-8"),
-            "isBase64Encoded": True,
-        }
+        url = s3.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": "waller-images", "Key": f"processed/{id}"},
+            ExpiresIn=EXPIRE_IN_MINUTES * 60,
+        )
+        return {"statusCode": 200, "body": json.dumps({"status": "done", "url": url})}
 
     return {
         "statusCode": 200,
