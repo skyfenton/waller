@@ -8,6 +8,8 @@ EXPIRE_IN_MINUTES = 30
 
 
 def lambda_handler(event, context):
+    """Gets the status of the requested job ID, including
+    a presigned URL to the processed image if the job has completed."""
     id = event["pathParameters"]["id"]
 
     table = dynamodb.Table("waller")
