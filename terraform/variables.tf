@@ -26,3 +26,8 @@ variable "api_address" {
 variable "domain_cert_arn" {
   type = string
 }
+
+variable "expire_jobs_after_minutes" {
+  type    = number
+  default = 30
+}

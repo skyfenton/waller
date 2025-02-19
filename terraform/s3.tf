@@ -41,6 +41,12 @@ module "expire_objects_lambda" {
     data.aws_iam_policy_document.db_get_policy.json,
     data.aws_iam_policy_document.db_write_policy.json
   ]
+
+  environment_variables = {
+    EXPIRE_IN_MINUTES = var.expire_jobs_after_minutes
+    BUCKET_NAME       = module.waller_image_bucket.s3_bucket_id
+    TABLE_NAME        = module.dynamodb_table.dynamodb_table_id
+  }
 }
 
 module "eventbridge" {
@@ -54,7 +60,7 @@ module "eventbridge" {
   schedules = {
     lambda-cron = {
       description         = "Trigger for a Lambda"
-      schedule_expression = "rate(30 minutes)"
+      schedule_expression = "rate(${var.expire_jobs_after_minutes} minutes)"
       timezone            = "Europe/London"
       arn                 = module.expire_objects_lambda.lambda_function_arn
       input               = jsonencode({ "job" : "cron-by-rate" })
