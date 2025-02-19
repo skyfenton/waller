@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime as dt
 import uuid
 import json
 import base64
@@ -44,12 +44,12 @@ def lambda_handler(event, context):
             ContentType=event["headers"]["content-type"],
         )
 
-        # Add a new item to the table
+        # Add item as "queued" to dynamodb
         dynamodb.Table("waller").put_item(
             Item={
                 "id": str(id),
                 "stage": "queued",
-                "modified_at": int(datetime.now().timestamp()),
+                "modified_at": int(dt.datetime.now(dt.UTC).timestamp()),
             }
         )
 
