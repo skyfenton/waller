@@ -1,12 +1,11 @@
 import datetime as dt
+import os
 import uuid
 import json
 import base64
 import binascii
 import boto3
 
-dynamodb = boto3.resource("dynamodb")
-s3 = boto3.client("s3")
 
 MAX_SIZE_IN_MB = 2
 ALLOWED_MIME_TYPES = ["image/jpeg", "image/jpg", "image/png"]
@@ -14,6 +13,10 @@ ALLOWED_MIME_TYPES = ["image/jpeg", "image/jpg", "image/png"]
 
 class InvalidUploadException(Exception):
     pass
+
+
+dynamodb = boto3.resource("dynamodb")
+s3 = boto3.client("s3")
 
 
 # SYNCHRONOUS lambda handler
@@ -38,14 +41,14 @@ def lambda_handler(event, context):
         id = uuid.uuid4()
 
         s3.put_object(
-            Bucket="waller-images",
+            Bucket=os.environ["BUCKET_NAME"],
             Key=f"queued/{id}",
             Body=file_bytes,
             ContentType=event["headers"]["content-type"],
         )
 
         # Add item as "queued" to dynamodb
-        dynamodb.Table("waller").put_item(
+        dynamodb.Table(os.environ["TABLE_NAME"]).put_item(
             Item={
                 "id": str(id),
                 "stage": "queued",
