@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime as dt
 from io import BytesIO
 import boto3
 from PIL import Image
@@ -12,8 +12,10 @@ dynamodb = boto3.resource("dynamodb")
 
 
 def lambda_handler(event, context):
+    """When an image is uploaded to s3, this function processes it through the
+    image processing pipeline and updates its status in the database."""
     for record in event["Records"]:
-        # check if event matches current version
+        # check if event matches expected version
         if record["eventVersion"].split(".")[0] != MAJOR_EVENT_VERSION:
             raise Exception(f"Unsupported event version: {record['eventVersion']}")
 
@@ -37,7 +39,7 @@ def lambda_handler(event, context):
         # Process the image
         out = model.process_image(image)
 
-        # Save the image to a bytes buffer
+        # Save the image to a buffer for upload
         buffer = BytesIO()
         out.save(buffer, format="PNG")
         buffer.seek(0)
@@ -47,7 +49,6 @@ def lambda_handler(event, context):
             % (bucket, f"processed/{id}")
         )
 
-        # upload output to s3 bucket
         s3.put_object(
             Bucket=bucket, Key=f"processed/{id}", Body=buffer, ContentType="image/png"
         )
@@ -57,8 +58,9 @@ def lambda_handler(event, context):
             UpdateExpression="SET stage = :stage, modified_at = :timestamp",
             ExpressionAttributeValues={
                 ":stage": "done",
-                ":timestamp": int(datetime.now().timestamp()),
+                ":timestamp": int(dt.datetime.now(dt.UTC).timestamp()),
             },
         )
 
+        # Delete the original image to save storage cost
         s3.delete_object(Bucket=bucket, Key=key)
