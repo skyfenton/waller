@@ -18,11 +18,21 @@ def reset():
     yield
 
 
+# TODO: Replace with end-to-end tests through deployed AWS infrastructure
+
+
 @mock_aws
 def test_inference_integration():
     conn = boto3.resource("s3", region_name="us-east-1")
-    # We need to create the bucket since this is all in Moto's 'virtual' AWS account
+    db = boto3.resource("dynamodb", region_name="us-east-1")
+    # Need to create resources since this is all in Moto's 'virtual' AWS account
     conn.create_bucket(Bucket="waller-inference")
+    db.create_table(
+        TableName="waller",
+        KeySchema=[{"AttributeName": "id", "KeyType": "HASH"}],
+        AttributeDefinitions=[{"AttributeName": "id", "AttributeType": "S"}],
+        ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
+    )
     # Upload a test image to mock bucket
     with open(INPUT_PATH, "rb") as input_img:
         conn.Object("waller-inference", "queued/test").put(Body=input_img.read())
