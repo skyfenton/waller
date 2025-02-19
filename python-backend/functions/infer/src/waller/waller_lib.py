@@ -14,7 +14,6 @@ def get_shrink_bounds(img: Image.Image, max_dimension: int) -> tuple[int, int]:
     if max_dimension == 0:
         raise ValueError("Desired max_dimension must be greater than 0")
     ratio = max(img.size[0] / max_dimension, img.size[1] / max_dimension)
-    print(ratio)
     return (round(img.size[0] / ratio), round(img.size[1] / ratio))
 
 

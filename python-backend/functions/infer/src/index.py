@@ -1,10 +1,12 @@
 import datetime as dt
 from io import BytesIO
+import os
 import boto3
 from PIL import Image
 from src.waller.waller_lib import WallerProcess
 
 MAJOR_EVENT_VERSION = "2"
+TABLE_NAME = os.environ["TABLE_NAME"]
 
 model = WallerProcess()
 s3 = boto3.client("s3")
@@ -30,7 +32,7 @@ def lambda_handler(event, context):
         image = Image.open(BytesIO(image_bytes))
 
         # Update the status in the database before processing
-        dynamodb.Table("waller").update_item(
+        dynamodb.Table(TABLE_NAME).update_item(
             Key={"id": id},
             UpdateExpression="SET stage = :stage",
             ExpressionAttributeValues={":stage": "processing"},
@@ -44,16 +46,17 @@ def lambda_handler(event, context):
         out.save(buffer, format="PNG")
         buffer.seek(0)
 
+        output_key = f"processed/{id}"
+
         print(
-            "Uploading processed image... (bucket: %s, key: %s)"
-            % (bucket, f"processed/{id}")
+            "Uploading processed image... (bucket: %s, key: %s)" % (bucket, output_key)
         )
 
         s3.put_object(
-            Bucket=bucket, Key=f"processed/{id}", Body=buffer, ContentType="image/png"
+            Bucket=bucket, Key=output_key, Body=buffer, ContentType="image/png"
         )
 
-        dynamodb.Table("waller").update_item(
+        dynamodb.Table(TABLE_NAME).update_item(
             Key={"id": id},
             UpdateExpression="SET stage = :stage, modified_at = :timestamp",
             ExpressionAttributeValues={

@@ -90,6 +90,11 @@ module "inference_lambda" {
     data.aws_iam_policy_document.del_object_policy.json,
     data.aws_iam_policy_document.db_write_policy.json
   ]
+
+  environment_variables = {
+    BUCKET_NAME = module.waller_image_bucket.s3_bucket_id
+    TABLE_NAME  = module.dynamodb_table.dynamodb_table_id
+  }
 }
 
 module "s3_notifications" {
