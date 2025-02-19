@@ -6,11 +6,16 @@ MODEL = os.getenv("MODEL_PATH")
 WALL_LABELS = set(["wall"])
 
 
-def get_shrink_bounds(img: Image.Image, width: int) -> tuple[int, int]:
-    """Returns a tuple representing the new size fitting given width which
-    preserves aspect ratio (width, height divided by shrink factor between
-    widths)"""
-    return (width, int(img.size[1] // (img.size[0] / width)))
+def get_shrink_bounds(img: Image.Image, max_dimension: int) -> tuple[int, int]:
+    """
+    Returns a tuple of (width, height) after shrinking all dimensions to under
+    the max_dimension value while preserving the current aspect ratio.
+    """
+    if max_dimension == 0:
+        raise ValueError("Desired max_dimension must be greater than 0")
+    ratio = max(img.size[0] / max_dimension, img.size[1] / max_dimension)
+    print(ratio)
+    return (round(img.size[0] / ratio), round(img.size[1] / ratio))
 
 
 class WallerProcess:
