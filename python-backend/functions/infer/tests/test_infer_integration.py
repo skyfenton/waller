@@ -5,9 +5,7 @@ import boto3
 import pytest
 from moto import mock_aws
 
-# Mock region
-os.environ["MOTO_ALLOW_NONEXISTENT_REGION"] = True
-os.environ["AWS_DEFAULT_REGION"] = "antarctica"
+os.environ["MOTO_ALLOW_NONEXISTENT_REGION"] = "True"
 
 # Set lambda function environment
 os.environ["BUCKET_NAME"] = "waller-inference"
