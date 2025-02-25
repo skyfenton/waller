@@ -2,7 +2,7 @@ import axios from 'axios';
 
 import { SingleFileUploader } from '@/pages/upload/components/file-uploader';
 import { useRef } from 'react';
-import { WallerJob } from '@/types';
+import { CompletedWallerJob, WallerJob, isJobUploading } from '@/types';
 import { isFileWithPreview } from '@/utils/isFileWithPreview';
 import ProgressCard from './components/progress-card';
 
@@ -14,6 +14,11 @@ interface JobData {
   status: string;
 }
 
+interface CompletedJobData extends JobData {
+  status: 'done';
+  maskURL: string;
+}
+
 export default function UploadPage(props: {
   job?: WallerJob;
   setJob: (job: WallerJob | undefined) => void;
@@ -23,42 +28,56 @@ export default function UploadPage(props: {
   const abortControllerRef = useRef<AbortController>(new AbortController());
 
   async function uploadImage(file: File) {
-    const res = await axios.postForm<UploadData>(
+    Object.assign(file, {
+      preview: URL.createObjectURL(file)
+    });
+    console.log(file);
+
+    props.setJob({ src: file, status: 'uploading' });
+
+    const res = await axios.post<UploadData>(
       (import.meta.env.VITE_SERVER_URL as string) + '/jobs',
+      await file.arrayBuffer(),
       {
-        file: file
-      },
-      {
+        headers: {
+          'Content-Type': file.type
+        },
         signal: abortControllerRef.current.signal
       }
     );
 
-    Object.assign(file, {
-      preview: URL.createObjectURL(file)
-    });
-
-    props.setJob({ id: res.data.id, image: file, processed: false });
+    props.setJob({ id: res.data.id, src: file, status: 'pending' });
   }
 
-  async function pollJob(): Promise<number> {
+  async function getJobProgress(): Promise<number> {
     if (props.job) {
+      // No id in system (still uploading)
+      if (isJobUploading(props.job)) return 25;
+
+      // Has id in system (poll for status)
+      console.debug('polling id:', props.job.id);
+
       return await axios
         .get<JobData>(
           (import.meta.env.VITE_SERVER_URL as string) + `/jobs/${props.job.id}`
         )
         .then((res) => {
           switch (res.data.status) {
-            case 'uploading':
-              return 25;
             case 'queued':
               return 50;
             case 'processing':
               return 75;
-            case 'done':
-              props.setJob({ ...props.job, processed: true } as WallerJob);
+            case 'done': {
+              props.setJob({
+                ...props.job,
+                status: 'done',
+                maskURL: (res.data as CompletedJobData).maskURL
+              } as CompletedWallerJob);
               return 100;
+            }
+            // Get file from presigned URL
             default:
-              return 0;
+              throw new Error('Unknown job status: ' + res.data.status);
           }
         });
     }
@@ -68,7 +87,7 @@ export default function UploadPage(props: {
   async function cancelJob() {
     abortControllerRef.current.abort();
     abortControllerRef.current = new AbortController();
-    if (props.job) {
+    if (props.job && 'id' in props.job) {
       await axios.delete(
         (import.meta.env.VITE_SERVER_URL as string) + `/jobs/${props.job.id}`,
         {
@@ -76,8 +95,8 @@ export default function UploadPage(props: {
         }
       );
 
-      if (isFileWithPreview(props.job.image)) {
-        URL.revokeObjectURL(props.job.image.preview);
+      if (isFileWithPreview(props.job.src)) {
+        URL.revokeObjectURL(props.job.src.preview);
       }
 
       props.setJob(undefined);
@@ -89,8 +108,8 @@ export default function UploadPage(props: {
       {props.job ? (
         <div className="mx-auto w-full max-w-2xl">
           <ProgressCard
-            file={props.job.image}
-            onPoll={pollJob}
+            image={props.job.src}
+            onPoll={getJobProgress}
             onCancel={cancelJob}
           />
         </div>

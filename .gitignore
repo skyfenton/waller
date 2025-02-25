@@ -1,6 +1,3 @@
-# directory for processed files/images and database file 
-data/
-
 # directory for temporary test files
 tmp/
 

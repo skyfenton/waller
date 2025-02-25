@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import UploadPage from '@/pages/upload';
 import EditPage from '@/pages/edit';
-import { WallerJob } from '@/types';
+import { isJobDone, WallerJob } from '@/types';
 
 export default function App() {
   const [job, setJob] = useState<WallerJob>();
@@ -39,7 +39,7 @@ export default function App() {
   // return <RouterProvider router={router} />;
   return (
     <>
-      {job?.processed ? (
+      {job && isJobDone(job) ? (
         <EditPage job={job} setJob={setJob} />
       ) : (
         <UploadPage job={job} setJob={setJob} />
