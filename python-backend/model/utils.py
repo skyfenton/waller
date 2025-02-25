@@ -1,4 +1,5 @@
 import random
+
 from PIL import Image
 
 COLOR_MAP = {"wall": (255, 0, 0)}

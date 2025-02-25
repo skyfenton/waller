@@ -1,6 +1,6 @@
 import pytest
-from src.waller.waller_lib import get_shrink_bounds
 from PIL import Image
+from src.waller.waller_lib import get_shrink_bounds
 
 
 def test_get_shrink_bounds_width_bound():

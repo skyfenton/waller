@@ -1,6 +1,7 @@
-from transformers import pipeline
-from PIL import Image, ImageChops
 import os
+
+from PIL import Image, ImageChops
+from transformers import pipeline
 
 MODEL = os.getenv("MODEL_PATH")
 WALL_LABELS = set(["wall"])

@@ -1,11 +1,11 @@
-import datetime as dt
-import os
-import uuid
-import json
 import base64
 import binascii
-import boto3
+import datetime as dt
+import json
+import os
+import uuid
 
+import boto3
 
 MAX_SIZE_IN_MB = 2
 ALLOWED_MIME_TYPES = ["image/jpeg", "image/jpg", "image/png"]

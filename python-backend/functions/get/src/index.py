@@ -1,6 +1,7 @@
-import os
-import boto3
 import json
+import os
+
+import boto3
 
 EXPIRE_IN_MINUTES = int(os.environ["EXPIRE_IN_MINUTES"])
 TABLE_NAME = os.environ["TABLE_NAME"]
