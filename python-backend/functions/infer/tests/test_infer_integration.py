@@ -5,8 +5,6 @@ import boto3
 import pytest
 from moto import mock_aws
 
-os.environ["MOTO_ALLOW_NONEXISTENT_REGION"] = "True"
-
 # Set lambda function environment
 os.environ["BUCKET_NAME"] = "waller-inference"
 os.environ["TABLE_NAME"] = "waller"
