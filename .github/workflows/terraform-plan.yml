@@ -20,20 +20,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup environment variables
-        run: |
-          echo "$ALLMYSECRETS"
-          echo "$ALLMYVARS"
-        shell: bash
-        env:
-          ALLMYSECRETS: ${{ toJSON(secrets) }}
-          ALLMYVARS: ${{ toJSON(vars) }}
+      # - name: Setup environment variables
+      #   run: |
+      #     echo "$ALLMYVARS"
+      #   shell: bash
+      #   env:
+      #     ALLMYVARS: ${{ toJSON(vars) }}
 
       - name: terraform plan
         uses: dflook/terraform-plan@v1
         env:
           TF_VAR_aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TF_VAR_api_address_domain: ${{ vars.API_ADDRESS_DOMAIN }}
+          TF_VAR_api_address_subdomain: ${{ vars.API_ADDRESS_SUBDOMAIN }}
+          TF_VAR_aws_region: ${{ vars.AWS_REGION }}
+          TF_VAR_aws_access_key: ${{ vars.AWS_ACCESS_KEY_ID }}
+          TF_VAR_domain_cert_arn: ${{ vars.DOMAIN_CERT_ARN }}
         with:
           path: terraform
           
