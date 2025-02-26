@@ -14,11 +14,19 @@ variable "cloudflare_api_token" {
   type = string
 }
 
-variable "api_address" {
-  type = object({
-    subdomain = string
-    domain    = string
-  })
+# variable "api_address" {
+#   type = object({
+#     subdomain = string
+#     domain    = string
+#   })
+# }
+
+variable "api_address_subdomain" {
+  type = string
+}
+
+variable "api_address_domain" {
+  type = string
 }
 
 variable "domain_cert_arn" {
