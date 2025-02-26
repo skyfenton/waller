@@ -1,15 +1,13 @@
-variable "aws_config" {
-  type = object({
-    shared_config_files      = list(string)
-    shared_credentials_files = list(string)
-    profile                  = string
-  })
+variable "aws_access_key" {
+  type = string
+}
 
-  default = {
-    shared_config_files      = []
-    shared_credentials_files = []
-    profile                  = "default"
-  }
+variable "aws_secret_key" {
+  type = string
+}
+
+variable "aws_region" {
+  type = string
 }
 
 variable "cloudflare_api_token" {

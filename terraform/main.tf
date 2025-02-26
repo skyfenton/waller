@@ -1,7 +1,7 @@
 provider "aws" {
-  shared_config_files      = var.aws_config.shared_config_files
-  shared_credentials_files = var.aws_config.shared_credentials_files
-  profile                  = var.aws_config.profile
+  access_key = var.aws_access_key
+  secret_key = var.aws_secret_key
+  region     = var.aws_region
 
   default_tags {
     tags = {
