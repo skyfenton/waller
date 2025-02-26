@@ -1,0 +1,10 @@
+boto3==1.36.16
+moto==5.0.28
+pytest==8.3.4
+
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.5.1
+torchvision==0.20.1
+transformers[torch]==4.48.1
+scipy==1.15.1
+Pillow==11.1.0

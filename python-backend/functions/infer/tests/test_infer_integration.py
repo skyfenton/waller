@@ -5,7 +5,7 @@ import boto3
 import pytest
 from moto import mock_aws
 
-# TODO: Fix import to show progress of loading model
+# Set lambda function environment
 os.environ["BUCKET_NAME"] = "waller-inference"
 os.environ["TABLE_NAME"] = "waller"
 os.environ["MODEL_PATH"] = "facebook/mask2former-swin-small-ade-semantic"
