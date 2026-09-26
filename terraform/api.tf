@@ -1,5 +1,5 @@
 locals {
-  fqdn = "${var.api_address.subdomain}.${var.api_address.domain}"
+  fqdn = "${var.api_address_subdomain}.${var.api_address_domain}"
 }
 
 module "api_gateway" {

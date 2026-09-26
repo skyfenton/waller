@@ -8,7 +8,7 @@ module "waller_image_bucket" {
   # attach_deny_insecure_transport_policy = true
   # attach_require_latest_tls_policy      = true
 
-  # lambda_function = 
+  # lambda_function =
 }
 
 
@@ -51,6 +51,7 @@ module "expire_objects_lambda" {
 
 module "eventbridge" {
   source = "terraform-aws-modules/eventbridge/aws"
+  version = "~> 3.17"
 
   create_bus = false
 
