@@ -1,0 +1,30 @@
+[tools]
+python = "3.12"
+uv = "0.12"
+
+[env]
+_.python.venv = { path = ".venv", create = true }
+
+[tasks.setup]
+description = "Create .env from .env.example if it is missing"
+hide = true
+run = "test -f .env || cp .env.example .env"
+
+[tasks.install]
+description = "Install Python dependencies into .venv"
+run = "uv pip install -r requirements.txt"
+
+[tasks.serve]
+description = "Run the Waller backend API (uvicorn + model worker)"
+depends = ["install", "setup"]
+run = "python main.py"
+
+[tasks.dev]
+description = "Run the backend with auto-reload on source changes"
+depends = ["install", "setup"]
+run = "python main.py --reload"
+
+[tasks.test]
+description = "Run pytest suite"
+depends = ["install"]
+run = "pytest"

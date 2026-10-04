@@ -1,0 +1,13 @@
+[tools]
+"pypi:git+https://github.com/aws/aws-cli.git" = "2.37.9"
+
+[tools."http:terraform"]
+version = "1.16.4"
+version_order = "semver"
+url = 'https://releases.hashicorp.com/terraform/{{ version }}/terraform_{{ version }}_{{ os(macos="darwin") }}_{{ arch(x64="amd64") }}.zip'
+checksum_url = 'https://releases.hashicorp.com/terraform/{{ version }}/terraform_{{ version }}_SHA256SUMS'
+version_list_url = "https://releases.hashicorp.com/terraform/index.json"
+version_expr = 'fromJSON(body).versions | keys() | sortVersions()'
+
+[tasks.deploy]
+run = ["terraform apply --var-file environments/dev.tfvars"]

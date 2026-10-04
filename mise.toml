@@ -1,0 +1,16 @@
+monorepo_root = true
+
+[monorepo]
+config_roots = ["python-backend", "react-frontend"]
+
+[tasks.dev]
+description = "Run the backend API and frontend dev server together"
+depends = ["//python-backend:dev", "//react-frontend:dev"]
+
+[tasks.install]
+description = "Install dependencies in every project"
+depends = ["//python-backend:install", "//react-frontend:install"]
+
+[tasks.test]
+description = "Run tests in every project"
+depends = ["//python-backend:test"]

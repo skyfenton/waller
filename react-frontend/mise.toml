@@ -1,0 +1,12 @@
+[tools]
+node = "20"
+pnpm = "9"
+
+[tasks.install]
+description = "Install frontend dependencies"
+run = "pnpm install"
+
+[tasks.dev]
+description = "Run the Vite dev server with hot reload"
+depends = ["install"]
+run = "pnpm dev"
