@@ -12,14 +12,10 @@ description = "Sync Python dependencies into .venv"
 run = "uv sync"
 
 [tasks.serve]
-description = "Run the Waller backend API (uvicorn + model worker)"
+description = "Run the Waller backend API (FastAPI + model worker). Use `mise watch serve --restart` for auto-reload"
 depends = ["install", "setup"]
-run = "uv run python main.py"
-
-[tasks.dev]
-description = "Run the backend with auto-reload on source changes"
-depends = ["install", "setup"]
-run = "uv run python main.py --reload"
+env = { _.file = ".env" }
+run = 'uv run fastapi run --host "${HOST:-127.0.0.1}" --port "${PORT:-8000}"'
 
 [tasks.test]
 description = "Run pytest suite"

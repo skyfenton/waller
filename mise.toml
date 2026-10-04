@@ -3,9 +3,9 @@ monorepo_root = true
 [monorepo]
 config_roots = ["python-backend", "react-frontend"]
 
-[tasks.dev]
-description = "Run the backend API and frontend dev server together"
-depends = ["//python-backend:dev", "//react-frontend:dev"]
+[tasks.serve]
+description = "Run the backend API and frontend dev server together. Use `mise watch serve --restart` for auto-reload"
+depends = ["//python-backend:serve", "//react-frontend:dev"]
 
 [tasks.install]
 description = "Install dependencies in every project"

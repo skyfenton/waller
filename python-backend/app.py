@@ -8,8 +8,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-# Async processing
+# Standard library
 import multiprocessing as mp
+import os
 from contextlib import asynccontextmanager
 
 # Local files
@@ -66,6 +67,18 @@ def dummy_loop(request_q: mp.Queue):
 
     
 
+def setup_storage():
+    """
+    Create the local data directories and database tables if they are missing.
+
+    Unlike the old CLI startup, this never deletes existing job files or
+    database rows, so data survives server restarts.
+    """
+    os.makedirs("data/processed", exist_ok=True)
+    os.makedirs("data/queued", exist_ok=True)
+    db.setup()
+
+
 def create_app(multiprocess='model') -> FastAPI:
     """
     Wrapper to create FastAPI app with middleware and routes
@@ -84,6 +97,8 @@ def create_app(multiprocess='model') -> FastAPI:
           'modes'. Should let user know when they call function with a malformed
           argument.
     """
+
+    setup_storage()
 
     match multiprocess:
         case 'model':
