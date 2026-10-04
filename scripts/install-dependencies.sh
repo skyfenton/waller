@@ -7,7 +7,8 @@ echo "Project Directory: $PROJ_DIR"
 
 eval cd "$PROJ_DIR/python-backend/"
 
-pip install -r requirements.txt
+command -v uv >/dev/null 2>&1 || pip install uv
+uv sync
 
 eval cd "$PROJ_DIR/react-frontend/"
 

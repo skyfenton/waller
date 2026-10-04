@@ -1,0 +1,35 @@
+[project]
+name = "waller-backend"
+version = "0.0.0"
+description = "Waller image segmentation backend"
+requires-python = ">=3.12"
+dependencies = [
+  "aiofiles>=24.1.0",
+  "click>=8.1.8",
+  "fastapi>=0.115.6",
+  "pillow>=11.1.0",
+  "python-dotenv>=1.0.1",
+  "python-multipart>=0.0.20",
+  "torch>=2.3.1",
+  "transformers>=4.48.0",
+  "uvicorn>=0.34.0",
+]
+
+[dependency-groups]
+dev = [
+  "httpx>=0.27.0",
+  "pytest>=8.3.4",
+  "watchfiles>=1.3.0",
+]
+
+[tool.uv]
+package = false
+
+# CPU-only torch builds; `explicit` keeps every other package on PyPI.
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
