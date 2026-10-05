@@ -13,7 +13,8 @@ const logError = (err: unknown) => {
 };
 
 export default function ProgressCard(props: {
-  file: File;
+  image: File;
+  uploadProgress?: number;
   onPoll: () => Promise<number>;
   onCancel: () => Promise<void>;
 }) {
@@ -33,20 +34,27 @@ export default function ProgressCard(props: {
           logError(err);
           props.onCancel().catch(logError);
         });
-      apiTimeout = setTimeout(pollAPI, 1000);
+      apiTimeout = setTimeout(pollAPI, 2000);
     }
 
     return () => {
       clearTimeout(apiTimeout);
     };
-  }, []);
+  }, [props.onPoll]);
+
+  // While the upload is in flight, map transfer progress onto the first
+  // quarter of the bar (the rest is server-side job progress)
+  const displayProgress =
+    props.uploadProgress !== undefined
+      ? Math.round((props.uploadProgress * 25) / 100)
+      : progress;
 
   return (
     <div className="flex flex-col space-y-4">
-      {isFileWithPreview(props.file) ? (
+      {isFileWithPreview(props.image) ? (
         <img
-          src={props.file.preview}
-          alt={props.file.name}
+          src={props.image.preview}
+          alt={props.image.name}
           loading="lazy"
           className="aspect-[2/1] w-auto shrink-0 rounded-md object-cover"
         />
@@ -57,13 +65,13 @@ export default function ProgressCard(props: {
             {/* Title, size, and progress */}
             <div className="space-y-px">
               <p className="text-foreground/80 text-md line-clamp-1 font-medium">
-                {props.file.name}
+                {props.image.name}
               </p>
               <p className="text-muted-foreground text-xs">
-                {formatBytes(props.file.size)}
+                {formatBytes(props.image.size)}
               </p>
             </div>
-            <Progress value={progress} />
+            <Progress value={displayProgress} />
           </div>
         </div>
         <div className="flex items-center gap-2">

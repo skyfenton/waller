@@ -37,7 +37,7 @@ def setup():
         StatusID integer not null default 0,
         FOREIGN KEY(StatusID) REFERENCES Statuses(StatusID)
         )""",
-        """INSERT INTO Statuses (StatusID, Desc)
+        """INSERT OR IGNORE INTO Statuses (StatusID, Desc)
         VALUES
             (0, "uploading"),
             (1, "queued"),

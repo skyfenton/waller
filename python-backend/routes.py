@@ -1,7 +1,24 @@
-from fastapi import FastAPI, APIRouter, Request, HTTPException, UploadFile
+# API framework
+from fastapi import (
+    APIRouter,
+    FastAPI,
+    File,
+    HTTPException,
+    Request,
+    UploadFile,
+    status,
+)
+from pydantic import BaseModel
 
 # Async processing
 import aiofiles
+
+# Standard library
+from pathlib import Path
+from typing import Annotated
+
+# Third party
+from PIL import Image
 
 # Local files
 import db
@@ -9,17 +26,77 @@ import processing
 
 router = APIRouter()
 
+QUEUED_DIR = Path("data/queued")
+MAX_UPLOAD_BYTES = 2 * 1024 * 1024  # 2 MB
+UPLOAD_CHUNK_SIZE = 64 * 1024  # 64 KB
+
+# Accepted upload MIME types mapped to their canonical file extension
+ALLOWED_IMAGE_TYPES = {
+    "image/jpeg": ".jpg",
+    "image/jpg": ".jpg",
+    "image/png": ".png",
+}
+
 
 @router.get("/")
 async def root():
     return {"message": "Hello World, I am listening."}
 
 
-async def save_file(file, path):
-    file.file.seek(0)
-    async with aiofiles.open(path, "wb") as out_file:
-        while content := await file.read(1024):  # async read chunk
-            await out_file.write(content)  # async write chunk
+async def save_file(file: UploadFile, path: Path) -> int:
+    """
+    Stream an uploaded file to disk in chunks.
+
+    Aborts and removes the partial file if the upload exceeds
+    MAX_UPLOAD_BYTES, so oversized uploads never fully land on disk.
+
+    Args:
+        file (UploadFile): File to write to disk.
+        path (Path): Destination file path.
+
+    Returns:
+        int: Number of bytes written.
+
+    Raises:
+        HTTPException: 413 code if file over MAX_UPLOAD_BYTES.
+    """
+    await file.seek(0)
+    written = 0
+    try:
+        async with aiofiles.open(path, "wb") as out_file:
+            while chunk := await file.read(UPLOAD_CHUNK_SIZE):
+                written += len(chunk)
+                if written > MAX_UPLOAD_BYTES:
+                    raise HTTPException(
+                        status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+                        detail="File too large",
+                    )
+                await out_file.write(chunk)
+    except BaseException:
+        path.unlink(missing_ok=True)
+        raise
+    return written
+
+
+def verify_image(file: UploadFile) -> None:
+    """
+    Verify that an upload is a real image Pillow can decode, catching
+    spoofed MIME types (e.g. a text file sent as image/png).
+
+    Args:
+        file (UploadFile): File to verify, positioned at the start.
+
+    Raises:
+        HTTPException: 400 if the file is not a valid image.
+    """
+    try:
+        with Image.open(file.file) as image:
+            image.verify()
+    except (OSError, SyntaxError, Image.DecompressionBombError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid image file",
+        ) from exc
 
 
 async def queue_job(app: FastAPI, job: processing.JobItem):
@@ -47,22 +124,28 @@ async def queue_job(app: FastAPI, job: processing.JobItem):
     )
 
 
-@router.post("/jobs", status_code=201)
-async def upload_image(file: UploadFile, request: Request) -> dict:
+class JobCreated(BaseModel):
+    """Response body for a newly created segmentation job."""
+
+    id: int
+
+
+@router.post("/jobs", status_code=status.HTTP_201_CREATED)
+async def upload_image(
+    file: Annotated[UploadFile, File(description="JPEG or PNG image up to 2 MB")],
+    request: Request,
+) -> JobCreated:
     """
     POST request endpoint to save an uploaded image and queue it for
-    segmentation. File is saved in the 'queued' folder under the data folder
-    specified by the DATA_PATH environment variable '##.jpeg/jpg/png' where ##
-    is the generated server-side id associated to the image. If successful,
-    responds with a 201 Created status code.
+    segmentation. The file is streamed to the 'queued' folder under the data
+    folder as '##.jpg/png' where ## is the generated server-side id associated
+    to the image. If successful, responds with a 201 Created status code.
 
-    Note, this loads the file into a memory/disk buffer which can be overloaded
-    with many requests. Can be mitigated by handling as a custom stream,
-    however, I don't care (jk, just not worth adding complexity when I'm the
-    only one using this service). See:
+    Uploads are accepted as multipart/form-data with the file in the 'file'
+    field. Starlette buffers the upload (spooling to disk above a size
+    threshold), so many concurrent large requests can still consume
+    memory/disk. See:
     https://fastapi.tiangolo.com/tutorial/request-files/#file-parameters-with-uploadfile
-
-    Question... Do multipart form data requests time out if it takes too long?
 
     Args:
         file (UploadFile): Multipart file to run image segmentation inference
@@ -70,28 +153,32 @@ async def upload_image(file: UploadFile, request: Request) -> dict:
         request (Request): Request object used to get model_loop queue.
 
     Raises:
-        HTTPException: 400 code if file over 2MB
-        HTTPException: 400 if file not jpeg, jpg, or png
+        HTTPException: 413 code if file over 2MB
+        HTTPException: 415 if file not jpeg, jpg, or png
+        HTTPException: 400 if file content is not a decodable image
 
     Returns:
-        dict: JSON body response with the newly generated unique job id
-
-    Todo:
-        * Return error if can't put item in queue (may have issue if maximum
-        amount of items in queue is specified)
+        JobCreated: JSON body response with the newly generated unique job id
     """
 
-    file.file.seek(0, 2)
-    file_size = file.file.tell()
+    # Reject oversized uploads before doing any other work
+    if file.size is not None and file.size > MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+            detail="File too large",
+        )
 
-    if file_size > 2 * 1024 * 1024:
-        # more than 2 MB
-        raise HTTPException(status_code=400, detail="File too large")
+    # Check the content type (MIME type)
+    content_type = (file.content_type or "").lower()
+    if content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Invalid file type",
+        )
 
-    # check the content type (MIME type)
-    content_type = file.content_type
-    if content_type not in ["image/jpeg", "image/jpg", "image/png"]:
-        raise HTTPException(status_code=400, detail="Invalid file type")
+    # Check the actual file content before writing anything to disk
+    await file.seek(0)
+    verify_image(file)
 
     # Create new row for job (new job's StatusID: 0 - "uploading")
     id = db.exec_queries(
@@ -99,27 +186,37 @@ async def upload_image(file: UploadFile, request: Request) -> dict:
         "SELECT last_insert_rowid()",
     )[0]
 
-    save_path = f"data/queued/{id}.{content_type.rsplit("/", 1)[1]}"
-    await save_file(file, save_path)
-    await queue_job(request.app, processing.JobItem(id, save_path))
+    # Server-generated name only; never trust the client filename
+    save_path = QUEUED_DIR / f"{id}{ALLOWED_IMAGE_TYPES[content_type]}"
 
-    return {"id": id}
+    try:
+        await save_file(file, save_path)
+        await queue_job(request.app, processing.JobItem(id, str(save_path)))
+    except Exception:
+        # Don't leave orphaned rows or files behind on failure
+        save_path.unlink(missing_ok=True)
+        db.exec_query(f"DELETE FROM Jobs WHERE JobID = {id}")
+        raise
+
+    return JobCreated(id=id)
 
 
 @router.get("/jobs/{id}", status_code=200)
-async def get_data(id: int) -> dict:
+async def get_data(id: int, request: Request) -> dict:
     """
     GET endpoint for getting status of given id in status database (img_status).
-    Responds with 200 OK if successful.
+    Responds with 200 OK if successful. Once processing is done, the response
+    also includes the URL of the generated mask image.
 
     Args:
         id (int): ID of job to query.
+        request (Request): Request object used to build the mask URL.
 
     Raises:
         HTTPException: 404: { "Item not found" } if id not found in database.
 
     Returns:
-        dict: JSON response with status of item.
+        dict: JSON response with status of item, plus 'maskURL' when done.
     """
 
     res = db.exec_query(
@@ -129,7 +226,12 @@ async def get_data(id: int) -> dict:
     )
     if not res:
         raise HTTPException(404, "Item not found")
-    return {"status": res[0]}
+
+    status_desc = res[0]
+    body = {"status": status_desc}
+    if status_desc == "done":
+        body["maskURL"] = str(request.url_for("images", path=f"{id}.png"))
+    return body
 
 
 @router.delete("/jobs/{id}", status_code=200)
