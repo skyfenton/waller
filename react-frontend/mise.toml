@@ -2,11 +2,20 @@
 node = "20"
 pnpm = "9"
 
+[tasks.setup]
+description = "Create .env from .env.example if it is missing"
+hide = true
+run = "test -f .env || cp .env.example .env"
+
 [tasks.install]
 description = "Install frontend dependencies"
 run = "pnpm install"
 
-[tasks.dev]
-description = "Run the Vite dev server with hot reload"
-depends = ["install"]
-run = "pnpm dev"
+[tasks.serve]
+description = "Run the Vite dev server. Reload with `mise watch serve --restart`"
+depends = ["install", "setup"]
+env = { _.file = ".env" }
+run = 'pnpm exec vite --host "${HOST:-localhost}" --port "${PORT:-5173}"'
+sources = ["src/**"]
+# Never skip this long-running task when sources are unchanged
+outputs = []
